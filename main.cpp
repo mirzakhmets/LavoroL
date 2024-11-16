@@ -16,7 +16,8 @@ extern "C" void operator delete (void *buffer) {
 	FreePool((VOID*) buffer);
 }
 
-extern "C" int __cxa_throw_bad_array_new_length = 0;
+extern "C" void __cxa_throw_bad_array_new_length() {
+}
 
 extern "C"
 EFI_STATUS
