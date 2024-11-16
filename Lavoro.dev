@@ -21,15 +21,15 @@ LogOutputEnabled=0
 OverrideOutput=0
 OverrideOutputName=Lavoro.exe
 HostApplication=
-UseCustomMakefile=1
+UseCustomMakefile=0
 CustomMakefile=Makefile.txt
 CommandLine=
-Folders=gnuefi,inc,inc/x86_64,lib,lib/runtime,lib/x86_64
+Folders=gnuefi,inc,inc/x86_64,lib,lib/runtime,lib/x86_64,packages,packages/ACM,packages/AntTSP
 IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;2;0;0;0
-UnitCount=100
+UnitCount=104
 
 [VersionInfo]
 Major=1
@@ -51,17 +51,17 @@ AutoIncBuildNr=0
 SyncProduct=1
 
 [Unit1]
-FileName=main.c
+FileName=src\gnu-efi-3.0.18\gnuefi\crt0-efi-aarch64.S
 CompileCpp=1
-Folder=
-Compile=1
-Link=1
+Folder=gnuefi
+Compile=0
+Link=0
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
 [Unit12]
-FileName=src\gnu-efi-3.0.18\gnuefi\elf_ia32_efi.lds
+FileName=src\gnu-efi-3.0.18\gnuefi\elf_ia32_fbsd_efi.lds
 CompileCpp=1
 Folder=gnuefi
 Compile=0
@@ -71,7 +71,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit14]
-FileName=src\gnu-efi-3.0.18\gnuefi\elf_ia64_efi.lds
+FileName=src\gnu-efi-3.0.18\gnuefi\elf_loongarch64_efi.lds
 Folder=gnuefi
 Compile=0
 Link=0
@@ -80,16 +80,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit32]
-FileName=src\gnu-efi-3.0.18\inc\efidevp.h
-Folder=inc
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-CompileCpp=1
-
-[Unit33]
 FileName=src\gnu-efi-3.0.18\inc\efierr.h
 Folder=inc
 Compile=1
@@ -99,7 +89,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit34]
+[Unit33]
 FileName=src\gnu-efi-3.0.18\inc\efifs.h
 Folder=inc
 Compile=1
@@ -109,7 +99,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit35]
+[Unit34]
 FileName=src\gnu-efi-3.0.18\inc\efigpt.h
 Folder=inc
 Compile=1
@@ -119,7 +109,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit36]
+[Unit35]
 FileName=src\gnu-efi-3.0.18\inc\efiip.h
 Folder=inc
 Compile=1
@@ -129,7 +119,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit37]
+[Unit36]
 FileName=src\gnu-efi-3.0.18\inc\efilib.h
 Folder=inc
 Compile=1
@@ -139,7 +129,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit38]
+[Unit37]
 FileName=src\gnu-efi-3.0.18\inc\efilink.h
 Folder=inc
 Compile=1
@@ -149,7 +139,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit39]
+[Unit38]
 FileName=src\gnu-efi-3.0.18\inc\efinet.h
 Folder=inc
 Compile=1
@@ -159,7 +149,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit40]
+[Unit39]
 FileName=src\gnu-efi-3.0.18\inc\efipart.h
 Folder=inc
 Compile=1
@@ -169,7 +159,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit41]
+[Unit40]
 FileName=src\gnu-efi-3.0.18\inc\efipciio.h
 Folder=inc
 Compile=1
@@ -179,7 +169,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit42]
+[Unit41]
 FileName=src\gnu-efi-3.0.18\inc\efipoint.h
 Folder=inc
 Compile=1
@@ -189,7 +179,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit43]
+[Unit42]
 FileName=src\gnu-efi-3.0.18\inc\efiprot.h
 Folder=inc
 Compile=1
@@ -199,7 +189,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit44]
+[Unit43]
 FileName=src\gnu-efi-3.0.18\inc\efipxebc.h
 Folder=inc
 Compile=1
@@ -209,7 +199,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit45]
+[Unit44]
 FileName=src\gnu-efi-3.0.18\inc\efirtlib.h
 Folder=inc
 Compile=1
@@ -219,7 +209,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit46]
+[Unit45]
 FileName=src\gnu-efi-3.0.18\inc\efiser.h
 Folder=inc
 Compile=1
@@ -229,7 +219,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit47]
+[Unit46]
 FileName=src\gnu-efi-3.0.18\inc\efishell.h
 Folder=inc
 Compile=1
@@ -239,7 +229,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit48]
+[Unit47]
 FileName=src\gnu-efi-3.0.18\inc\efishellintf.h
 Folder=inc
 Compile=1
@@ -249,7 +239,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit49]
+[Unit48]
 FileName=src\gnu-efi-3.0.18\inc\efistdarg.h
 Folder=inc
 Compile=1
@@ -259,7 +249,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit50]
+[Unit49]
 FileName=src\gnu-efi-3.0.18\inc\efitcp.h
 Folder=inc
 Compile=1
@@ -269,7 +259,7 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit51]
+[Unit50]
 FileName=src\gnu-efi-3.0.18\inc\efiudp.h
 Folder=inc
 Compile=1
@@ -279,17 +269,17 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit58]
-FileName=src\gnu-efi-3.0.18\inc\makefile.hdr
-CompileCpp=1
+[Unit51]
+FileName=src\gnu-efi-3.0.18\inc\efiui.h
 Folder=inc
-Compile=0
-Link=0
+Compile=1
+Link=1
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
+CompileCpp=1
 
-[Unit59]
+[Unit58]
 FileName=src\gnu-efi-3.0.18\inc\pci22.h
 CompileCpp=1
 Folder=inc
@@ -299,7 +289,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit60]
+[Unit59]
 FileName=src\gnu-efi-3.0.18\inc\romload.h
 CompileCpp=1
 Folder=inc
@@ -309,7 +299,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit61]
+[Unit60]
 FileName=src\gnu-efi-3.0.18\lib\x86_64\callwrap.c
 CompileCpp=1
 Folder=lib/x86_64
@@ -319,7 +309,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit62]
+[Unit61]
 FileName=src\gnu-efi-3.0.18\lib\x86_64\efi_stub.S
 CompileCpp=1
 Folder=lib/x86_64
@@ -329,7 +319,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit63]
+[Unit62]
 FileName=src\gnu-efi-3.0.18\lib\x86_64\initplat.c
 CompileCpp=1
 Folder=lib/x86_64
@@ -339,7 +329,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit64]
+[Unit63]
 FileName=src\gnu-efi-3.0.18\lib\x86_64\math.c
 CompileCpp=1
 Folder=lib/x86_64
@@ -349,7 +339,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit65]
+[Unit64]
 FileName=src\gnu-efi-3.0.18\lib\x86_64\setjmp.S
 CompileCpp=1
 Folder=lib/x86_64
@@ -359,7 +349,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit66]
+[Unit65]
 FileName=src\gnu-efi-3.0.18\lib\boxdraw.c
 CompileCpp=1
 Folder=lib
@@ -369,7 +359,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit67]
+[Unit66]
 FileName=src\gnu-efi-3.0.18\lib\cmdline.c
 CompileCpp=1
 Folder=lib
@@ -379,7 +369,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit68]
+[Unit67]
 FileName=src\gnu-efi-3.0.18\lib\console.c
 CompileCpp=1
 Folder=lib
@@ -389,7 +379,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit69]
+[Unit68]
 FileName=src\gnu-efi-3.0.18\lib\crc.c
 CompileCpp=1
 Folder=lib
@@ -399,7 +389,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit70]
+[Unit69]
 FileName=src\gnu-efi-3.0.18\lib\ctors.S
 CompileCpp=1
 Folder=lib
@@ -409,8 +399,18 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit71]
+[Unit70]
 FileName=src\gnu-efi-3.0.18\lib\data.c
+CompileCpp=1
+Folder=lib
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit71]
+FileName=src\gnu-efi-3.0.18\lib\debug.c
 CompileCpp=1
 Folder=lib
 Compile=1
@@ -420,7 +420,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit72]
-FileName=src\gnu-efi-3.0.18\lib\debug.c
+FileName=src\gnu-efi-3.0.18\lib\dpath.c
 CompileCpp=1
 Folder=lib
 Compile=1
@@ -430,7 +430,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit73]
-FileName=src\gnu-efi-3.0.18\lib\dpath.c
+FileName=src\gnu-efi-3.0.18\lib\entry.c
 CompileCpp=1
 Folder=lib
 Compile=1
@@ -440,16 +440,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit74]
-FileName=src\gnu-efi-3.0.18\lib\entry.c
-CompileCpp=1
-Folder=lib
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit75]
 FileName=src\gnu-efi-3.0.18\lib\error.c
 CompileCpp=1
 Folder=lib
@@ -459,7 +449,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit76]
+[Unit75]
 FileName=src\gnu-efi-3.0.18\lib\event.c
 CompileCpp=1
 Folder=lib
@@ -469,8 +459,8 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit78]
-FileName=src\gnu-efi-3.0.18\lib\guid.c
+[Unit76]
+FileName=src\gnu-efi-3.0.18\lib\exit.c
 CompileCpp=1
 Folder=lib
 Compile=1
@@ -479,7 +469,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit79]
+[Unit78]
 FileName=src\gnu-efi-3.0.18\lib\hand.c
 CompileCpp=1
 Folder=lib
@@ -489,7 +479,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit80]
+[Unit79]
 FileName=src\gnu-efi-3.0.18\lib\hw.c
 CompileCpp=1
 Folder=lib
@@ -499,7 +489,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit81]
+[Unit80]
 FileName=src\gnu-efi-3.0.18\lib\init.c
 CompileCpp=1
 Folder=lib
@@ -509,7 +499,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit82]
+[Unit81]
 FileName=src\gnu-efi-3.0.18\lib\lock.c
 CompileCpp=1
 Folder=lib
@@ -519,7 +509,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit83]
+[Unit82]
 FileName=src\gnu-efi-3.0.18\lib\Makefile
 CompileCpp=1
 Folder=lib
@@ -529,7 +519,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit84]
+[Unit83]
 FileName=src\gnu-efi-3.0.18\lib\misc.c
 CompileCpp=1
 Folder=lib
@@ -539,7 +529,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit85]
+[Unit84]
 FileName=src\gnu-efi-3.0.18\lib\pause.c
 CompileCpp=1
 Folder=lib
@@ -549,7 +539,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit86]
+[Unit85]
 FileName=src\gnu-efi-3.0.18\lib\print.c
 CompileCpp=1
 Folder=lib
@@ -559,7 +549,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit87]
+[Unit86]
 FileName=src\gnu-efi-3.0.18\lib\smbios.c
 CompileCpp=1
 Folder=lib
@@ -569,7 +559,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit88]
+[Unit87]
 FileName=src\gnu-efi-3.0.18\lib\sread.c
 CompileCpp=1
 Folder=lib
@@ -579,7 +569,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit89]
+[Unit88]
 FileName=src\gnu-efi-3.0.18\lib\str.c
 CompileCpp=1
 Folder=lib
@@ -589,7 +579,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit90]
+[Unit89]
 FileName=src\gnu-efi-3.0.18\lib\runtime\efirtlib.c
 CompileCpp=1
 Folder=lib/runtime
@@ -599,8 +589,18 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
+[Unit90]
+FileName=src\gnu-efi-3.0.18\lib\runtime\rtdata.c
+CompileCpp=1
+Folder=lib/runtime
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
 [Unit93]
-FileName=src\gnu-efi-3.0.18\lib\runtime\rtstr.c
+FileName=src\gnu-efi-3.0.18\lib\runtime\vm.c
 CompileCpp=1
 Folder=lib/runtime
 Compile=1
@@ -610,16 +610,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit95]
-FileName=src\elf.h
-Folder=
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-CompileCpp=1
-
-[Unit96]
 FileName=src\gnu-efi-3.0.18\inc\x86_64\efibind.h
 Folder=inc/x86_64
 Compile=1
@@ -629,17 +619,17 @@ OverrideBuildCmd=0
 BuildCmd=
 CompileCpp=1
 
-[Unit97]
+[Unit96]
 FileName=src\gnu-efi-3.0.18\inc\x86_64\efilibplat.h
-CompileCpp=1
 Folder=inc/x86_64
 Compile=1
 Link=1
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
+CompileCpp=1
 
-[Unit98]
+[Unit97]
 FileName=src\gnu-efi-3.0.18\inc\x86_64\efisetjmp_arch.h
 CompileCpp=1
 Folder=inc/x86_64
@@ -649,7 +639,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit99]
+[Unit98]
 FileName=src\gnu-efi-3.0.18\inc\efisetjmp.h
 CompileCpp=1
 Folder=inc
@@ -659,7 +649,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit100]
+[Unit99]
 FileName=src\gnu-efi-3.0.18\inc\x86_64\pe.h
 CompileCpp=1
 Folder=inc/x86_64
@@ -669,10 +659,20 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit101]
-FileName=src\gnu-efi-3.0.18\lib\data.c
+[Unit100]
+FileName=main.cpp
 CompileCpp=1
-Folder=lib
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit101]
+FileName=src\packages\ACM\Box.cpp
+CompileCpp=1
+Folder=packages/ACM
 Compile=1
 Link=1
 Priority=1000
@@ -680,9 +680,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit102]
-FileName=src\gnu-efi-3.0.18\lib\debug.c
+FileName=src\packages\ACM\Pyramids.cpp
 CompileCpp=1
-Folder=lib
+Folder=packages/ACM
 Compile=1
 Link=1
 Priority=1000
@@ -690,9 +690,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit103]
-FileName=src\gnu-efi-3.0.18\lib\dpath.c
+FileName=src\packages\AntTSP\AntTSP.cpp
 CompileCpp=1
-Folder=lib
+Folder=packages/AntTSP
 Compile=1
 Link=1
 Priority=1000
@@ -700,10 +700,10 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit104]
-FileName=src\gnu-efi-3.0.18\lib\entry.c
-Folder=lib
-Compile=1
-Link=1
+FileName=Makefile
+Folder=
+Compile=0
+Link=0
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
@@ -1040,16 +1040,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit52]
-FileName=src\gnu-efi-3.0.18\inc\efiui.h
-CompileCpp=1
-Folder=inc
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit53]
 FileName=src\gnu-efi-3.0.18\inc\inc.mak
 CompileCpp=1
 Folder=inc
@@ -1059,7 +1049,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit54]
+[Unit53]
 FileName=src\gnu-efi-3.0.18\inc\lib.h
 CompileCpp=1
 Folder=inc
@@ -1069,7 +1059,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit55]
+[Unit54]
 FileName=src\gnu-efi-3.0.18\inc\libsmbios.h
 CompileCpp=1
 Folder=inc
@@ -1079,7 +1069,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit56]
+[Unit55]
 FileName=src\gnu-efi-3.0.18\inc\make.inf
 CompileCpp=1
 Folder=inc
@@ -1089,7 +1079,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit57]
+[Unit56]
 FileName=src\gnu-efi-3.0.18\inc\Makefile
 CompileCpp=1
 Folder=inc
@@ -1099,8 +1089,18 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
+[Unit57]
+FileName=src\gnu-efi-3.0.18\inc\makefile.hdr
+CompileCpp=1
+Folder=inc
+Compile=0
+Link=0
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
 [Unit77]
-FileName=src\gnu-efi-3.0.18\lib\exit.c
+FileName=src\gnu-efi-3.0.18\lib\guid.c
 CompileCpp=1
 Folder=lib
 Compile=1
@@ -1110,7 +1110,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit91]
-FileName=src\gnu-efi-3.0.18\lib\runtime\rtdata.c
+FileName=src\gnu-efi-3.0.18\lib\runtime\rtlock.c
 CompileCpp=1
 Folder=lib/runtime
 Compile=1
@@ -1120,7 +1120,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit92]
-FileName=src\gnu-efi-3.0.18\lib\runtime\rtlock.c
+FileName=src\gnu-efi-3.0.18\lib\runtime\rtstr.c
 Folder=lib/runtime
 Compile=1
 Link=1
@@ -1130,9 +1130,9 @@ BuildCmd=
 CompileCpp=1
 
 [Unit94]
-FileName=src\gnu-efi-3.0.18\lib\runtime\vm.c
+FileName=src\elf.h
 CompileCpp=1
-Folder=lib/runtime
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -1140,15 +1140,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit2]
-FileName=src\gnu-efi-3.0.18\gnuefi\crt0-efi-aarch64.S
-Folder=gnuefi
-Compile=0
-Link=0
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit3]
 FileName=src\gnu-efi-3.0.18\gnuefi\crt0-efi-arm.S
 Folder=gnuefi
 Compile=0
@@ -1157,7 +1148,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit4]
+[Unit3]
 FileName=src\gnu-efi-3.0.18\gnuefi\crt0-efi-ia32.S
 Folder=gnuefi
 Compile=0
@@ -1166,7 +1157,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit5]
+[Unit4]
 FileName=src\gnu-efi-3.0.18\gnuefi\crt0-efi-ia64.S
 Folder=gnuefi
 Compile=0
@@ -1175,7 +1166,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit6]
+[Unit5]
 FileName=src\gnu-efi-3.0.18\gnuefi\crt0-efi-loongarch64.S
 Folder=gnuefi
 Compile=0
@@ -1184,7 +1175,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit7]
+[Unit6]
 FileName=src\gnu-efi-3.0.18\gnuefi\crt0-efi-mips64el.S
 Folder=gnuefi
 Compile=0
@@ -1193,7 +1184,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit8]
+[Unit7]
 FileName=src\gnu-efi-3.0.18\gnuefi\crt0-efi-riscv64.S
 Folder=gnuefi
 Compile=0
@@ -1202,7 +1193,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit9]
+[Unit8]
 FileName=src\gnu-efi-3.0.18\gnuefi\crt0-efi-x86_64.S
 Folder=gnuefi
 Compile=0
@@ -1211,7 +1202,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit10]
+[Unit9]
 FileName=src\gnu-efi-3.0.18\gnuefi\elf_aarch64_efi.lds
 Folder=gnuefi
 Compile=0
@@ -1220,7 +1211,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit11]
+[Unit10]
 FileName=src\gnu-efi-3.0.18\gnuefi\elf_arm_efi.lds
 Folder=gnuefi
 Compile=0
@@ -1229,8 +1220,17 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
+[Unit11]
+FileName=src\gnu-efi-3.0.18\gnuefi\elf_ia32_efi.lds
+Folder=gnuefi
+Compile=0
+Link=0
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
 [Unit13]
-FileName=src\gnu-efi-3.0.18\gnuefi\elf_ia32_fbsd_efi.lds
+FileName=src\gnu-efi-3.0.18\gnuefi\elf_ia64_efi.lds
 Folder=gnuefi
 Compile=0
 Link=0
@@ -1239,15 +1239,6 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit15]
-FileName=src\gnu-efi-3.0.18\gnuefi\elf_loongarch64_efi.lds
-Folder=gnuefi
-Compile=0
-Link=0
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit16]
 FileName=src\gnu-efi-3.0.18\gnuefi\elf_mips64el_efi.lds
 Folder=gnuefi
 Compile=0
@@ -1256,7 +1247,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit17]
+[Unit16]
 FileName=src\gnu-efi-3.0.18\gnuefi\elf_riscv64_efi.lds
 Folder=gnuefi
 Compile=0
@@ -1265,7 +1256,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit18]
+[Unit17]
 FileName=src\gnu-efi-3.0.18\gnuefi\elf_x86_64_efi.lds
 Folder=gnuefi
 Compile=0
@@ -1274,7 +1265,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit19]
+[Unit18]
 FileName=src\gnu-efi-3.0.18\gnuefi\elf_x86_64_fbsd_efi.lds
 Folder=gnuefi
 Compile=0
@@ -1283,7 +1274,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit20]
+[Unit19]
 FileName=src\gnu-efi-3.0.18\gnuefi\gnu-efi.pc.in
 Folder=gnuefi
 Compile=0
@@ -1292,7 +1283,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit21]
+[Unit20]
 FileName=src\gnu-efi-3.0.18\gnuefi\Makefile
 Folder=gnuefi
 Compile=0
@@ -1301,17 +1292,17 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit22]
+[Unit21]
 FileName=src\gnu-efi-3.0.18\gnuefi\reloc_x86_64.c
-CompileCpp=1
 Folder=gnuefi
 Compile=1
 Link=1
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
+CompileCpp=1
 
-[Unit23]
+[Unit22]
 FileName=src\gnu-efi-3.0.18\inc\efi.h
 CompileCpp=1
 Folder=inc
@@ -1321,7 +1312,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit24]
+[Unit23]
 FileName=src\gnu-efi-3.0.18\inc\efi_nii.h
 CompileCpp=1
 Folder=inc
@@ -1331,7 +1322,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit25]
+[Unit24]
 FileName=src\gnu-efi-3.0.18\inc\efi_pxe.h
 CompileCpp=1
 Folder=inc
@@ -1341,7 +1332,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit26]
+[Unit25]
 FileName=src\gnu-efi-3.0.18\inc\efiapi.h
 CompileCpp=1
 Folder=inc
@@ -1351,7 +1342,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit27]
+[Unit26]
 FileName=src\gnu-efi-3.0.18\inc\eficompiler.h
 CompileCpp=1
 Folder=inc
@@ -1361,7 +1352,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit28]
+[Unit27]
 FileName=src\gnu-efi-3.0.18\inc\eficon.h
 CompileCpp=1
 Folder=inc
@@ -1371,7 +1362,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit29]
+[Unit28]
 FileName=src\gnu-efi-3.0.18\inc\eficonex.h
 CompileCpp=1
 Folder=inc
@@ -1381,7 +1372,7 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit30]
+[Unit29]
 FileName=src\gnu-efi-3.0.18\inc\efidebug.h
 CompileCpp=1
 Folder=inc
@@ -1391,8 +1382,18 @@ Priority=1000
 OverrideBuildCmd=0
 BuildCmd=
 
-[Unit31]
+[Unit30]
 FileName=src\gnu-efi-3.0.18\inc\efidef.h
+CompileCpp=1
+Folder=inc
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit31]
+FileName=src\gnu-efi-3.0.18\inc\efidevp.h
 CompileCpp=1
 Folder=inc
 Compile=1
