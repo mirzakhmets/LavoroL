@@ -1,7 +1,7 @@
 # Project: Lavoro
 # Makefile created by Embarcadero Dev-C++ 6.3
 
-CPP      = gcc
+CPP      = g++
 CC       = gcc
 OBJ      = main.o src/gnu-efi-3.0.18/gnuefi/reloc_x86_64.o src/gnu-efi-3.0.18/lib/x86_64/callwrap.o src/gnu-efi-3.0.18/lib/x86_64/initplat.o src/gnu-efi-3.0.18/lib/x86_64/math.o src/gnu-efi-3.0.18/lib/boxdraw.o src/gnu-efi-3.0.18/lib/cmdline.o src/gnu-efi-3.0.18/lib/console.o src/gnu-efi-3.0.18/lib/crc.o src/gnu-efi-3.0.18/lib/data.o src/gnu-efi-3.0.18/lib/debug.o src/gnu-efi-3.0.18/lib/dpath.o src/gnu-efi-3.0.18/lib/entry.o src/gnu-efi-3.0.18/lib/error.o src/gnu-efi-3.0.18/lib/event.o src/gnu-efi-3.0.18/lib/exit.o src/gnu-efi-3.0.18/lib/guid.o src/gnu-efi-3.0.18/lib/hand.o src/gnu-efi-3.0.18/lib/hw.o src/gnu-efi-3.0.18/lib/init.o src/gnu-efi-3.0.18/lib/lock.o src/gnu-efi-3.0.18/lib/misc.o src/gnu-efi-3.0.18/lib/pause.o src/gnu-efi-3.0.18/lib/print.o src/gnu-efi-3.0.18/lib/smbios.o src/gnu-efi-3.0.18/lib/sread.o src/gnu-efi-3.0.18/lib/str.o src/gnu-efi-3.0.18/lib/runtime/efirtlib.o src/gnu-efi-3.0.18/lib/runtime/rtdata.o src/gnu-efi-3.0.18/lib/runtime/rtlock.o src/gnu-efi-3.0.18/lib/runtime/rtstr.o src/gnu-efi-3.0.18/lib/runtime/vm.o src/gnu-efi-3.0.18/lib/x86_64/efi_stub.o src/gnu-efi-3.0.18/lib/x86_64/setjmp.o src/gnu-efi-3.0.18/lib/ctors.o src/gnu-efi-3.0.18/gnuefi/crt0-efi-x86_64.o src/packages/ACM/Box.o src/packages/ACM/Pyramids.o src/packages/AntTSP/AntTSP.o
 LINKOBJ  = main.o src/gnu-efi-3.0.18/gnuefi/reloc_x86_64.o src/gnu-efi-3.0.18/lib/x86_64/callwrap.o src/gnu-efi-3.0.18/lib/x86_64/initplat.o src/gnu-efi-3.0.18/lib/x86_64/math.o src/gnu-efi-3.0.18/lib/boxdraw.o src/gnu-efi-3.0.18/lib/cmdline.o src/gnu-efi-3.0.18/lib/console.o src/gnu-efi-3.0.18/lib/crc.o src/gnu-efi-3.0.18/lib/data.o src/gnu-efi-3.0.18/lib/debug.o src/gnu-efi-3.0.18/lib/dpath.o src/gnu-efi-3.0.18/lib/entry.o src/gnu-efi-3.0.18/lib/error.o src/gnu-efi-3.0.18/lib/event.o src/gnu-efi-3.0.18/lib/exit.o src/gnu-efi-3.0.18/lib/guid.o src/gnu-efi-3.0.18/lib/hand.o src/gnu-efi-3.0.18/lib/hw.o src/gnu-efi-3.0.18/lib/init.o src/gnu-efi-3.0.18/lib/lock.o src/gnu-efi-3.0.18/lib/misc.o src/gnu-efi-3.0.18/lib/pause.o src/gnu-efi-3.0.18/lib/print.o src/gnu-efi-3.0.18/lib/smbios.o src/gnu-efi-3.0.18/lib/sread.o src/gnu-efi-3.0.18/lib/str.o src/gnu-efi-3.0.18/lib/runtime/efirtlib.o src/gnu-efi-3.0.18/lib/runtime/rtdata.o src/gnu-efi-3.0.18/lib/runtime/rtlock.o src/gnu-efi-3.0.18/lib/runtime/rtstr.o src/gnu-efi-3.0.18/lib/runtime/vm.o src/gnu-efi-3.0.18/lib/x86_64/efi_stub.o src/gnu-efi-3.0.18/lib/x86_64/setjmp.o src/gnu-efi-3.0.18/lib/ctors.o src/packages/ACM/Box.o src/packages/ACM/Pyramids.o src/packages/AntTSP/AntTSP.o
@@ -9,7 +9,7 @@ LIBS     = -L"/LavoroL/src/gnu-efi-3.0.18/gnuefi" -L"/LavoroL/src/gnu-efi-3.0.18
 INCS     = -I"/LavoroL/src" -I"/LavoroL/src/gnu-efi-3.0.18/inc" -I"/LavoroL/src/gnu-efi-3.0.18/inc/x86_64"
 CXXINCS  = -I"/LavoroL/src" -I"/LavoroL/src/gnu-efi-3.0.18/inc" -I"/LavoroL/src/gnu-efi-3.0.18/inc/x86_64"
 BIN      = LavoroL
-CXXFLAGS = $(CXXINCS) -fpic -ffreestanding -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -mno-avx -fPIE -g -O2 -funsigned-char -fno-strict-aliasing -fno-stack-check -fno-merge-all-constants -DCONFIG_X86_64 -maccumulate-outgoing-args -DGNU_EFI_USE_MS_ABI
+CXXFLAGS = $(CXXINCS) -fpic -ffreestanding -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -mno-avx -fPIE -g -O2 -funsigned-char -fno-strict-aliasing -fno-stack-check -fno-merge-all-constants -DCONFIG_X86_64 -maccumulate-outgoing-args -DGNU_EFI_USE_MS_ABI -fpermissive
 CFLAGS   = $(INCS) 
 DEL      = rm
 

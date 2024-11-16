@@ -56,9 +56,9 @@ static void dtors(void)
 	}
 }
 
-extern EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *systab);
+extern "C" EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *systab);
 
-EFI_STATUS _entry(EFI_HANDLE image, EFI_SYSTEM_TABLE *systab)
+extern "C" EFI_STATUS _entry(EFI_HANDLE image, EFI_SYSTEM_TABLE *systab)
 {
 	EFI_STATUS status;
 	InitializeLib(image, systab);
