@@ -152,7 +152,7 @@ extern "C" int AntTSP_Main() {
 		}
 	}
 	
-	Print(L"%d\r\n", (int) sol);
+	Print(L"\r\n%d\r\n", (int) sol);
 	for(int i = 0; i < best_tour_length; ++i) {
 		Print(L"%d ", best_tour[i] + 1);
 	}

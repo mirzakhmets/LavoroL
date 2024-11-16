@@ -40,9 +40,9 @@ extern "C" int Box_Main() {
 		e[i] = 0;
 
 	if(box(0, e, q))
-		Print(L"POSSIBLE\r\n");
+		Print(L"\r\nPOSSIBLE\r\n");
 	else
-		Print(L"IMPOSSIBLE\r\n");
+		Print(L"\r\nIMPOSSIBLE\r\n");
 	return 0;
 }
 

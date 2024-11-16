@@ -32,7 +32,7 @@ extern "C" int Pyramids_Main() {
 	}
   	
     MarkNum = MarkNum + 1;
-    Print (L"%d\r\n", (int) F(0, StrLen(S) - 1));
+    Print (L"\r\n%d\r\n", (int) F(0, StrLen(S) - 1));
   }
   
   return 0;
