@@ -2,8 +2,8 @@
 #include <efi.h>
 #include <efilib.h>
 
-const int max_n = 4000;
-const int max_ant = 2000;
+const int max_n = 400;
+const int max_ant = 200;
 double tau[max_n][max_n];
 double eta[max_n][max_n];
 double len[max_n][max_n];
