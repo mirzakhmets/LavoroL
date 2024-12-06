@@ -21,7 +21,7 @@ clean: clean-custom
 	${DEL} $(OBJ) $(BIN)
 
 $(BIN): $(OBJ)
-	ld $(LINKOBJ) -o $(BIN) $(LIBS) --no-undefined --build-id=sha1 -z nocombreloc -T "src/gnu-efi-3.0.18/gnuefi/elf_x86_64_efi.lds" -shared -Bsymbolic -nostdlib "src/gnu-efi-3.0.18/gnuefi/crt0-efi-x86_64.o"
+	ld $(LINKOBJ) -o $(BIN) $(LIBS) -z common-page-size=4096 -z max-page-size=4096 --no-undefined --build-id=sha1 -z nocombreloc -T "src/gnu-efi-3.0.18/gnuefi/elf_x86_64_efi.lds" -shared -Bsymbolic -nostdlib "src/gnu-efi-3.0.18/gnuefi/crt0-efi-x86_64.o"
 	objcopy -j .text -j .sdata -j .data -j .rodata -j .dynamic -j .dynsym  -j .rel -j .rela -j .rel.* -j .rela.* -j .reloc --target efi-app-x86_64 $(BIN) LavoroL.efi
 
 main.o: main.cpp
