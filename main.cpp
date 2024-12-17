@@ -32,6 +32,8 @@ EFIAPI
 efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
 	InitializeLib(ImageHandle, SystemTable);
+
+	gImageHandle = ImageHandle;
 	
 	Print(L"Welcome to LavoroL!\r\n");
 	
@@ -64,7 +66,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	
 	InitializeNetworkProtocol();
 	
-	InitializeBindingProtocol(ImageHandle);
+	InitializeBindingProtocol();
 	
 	EFI_IPv4_ADDRESS gLocalAddress = { 192, 168, 0, 12 };
 	EFI_IPv4_ADDRESS gSubnetMask = { 255, 255, 255, 0 };
@@ -77,7 +79,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	
 	LSocket socket(&gLocalAddress, 100);
 	
-	socket.CreateChild(ImageHandle);
+	socket.CreateChild();
 	
 	socket.Connect(&gRemoteAddress, &gSubnetMask, 80);
 	
@@ -93,7 +95,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	
 	Print(L"%s\r\n", szBuffer);
 	
-	FreeBindingProtocol(ImageHandle);
+	FreeBindingProtocol();
 	
 	FreeNetworkProtocol();
 	

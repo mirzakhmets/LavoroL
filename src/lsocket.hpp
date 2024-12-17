@@ -9,9 +9,11 @@ extern EFI_GUID Tcp4ServiceBindingProtocol;
 
 extern EFI_GUID gEfiSimpleNetworkProtocolGuid;
 
+static EFI_HANDLE gImageHandle = NULL;
+
 static int volatile TCPEventStatus = -1;
 
-static EFIAPI void TCPCompletionTokenEvent(EFI_EVENT event, void *context) {
+EFIAPI void TCPCompletionTokenEvent(EFI_EVENT event, void *context) {
 	EFI_TCP4_COMPLETION_TOKEN *token = context;
 
 	(void) event;
@@ -21,6 +23,35 @@ static EFIAPI void TCPCompletionTokenEvent(EFI_EVENT event, void *context) {
 	} else {
 		TCPEventStatus = 1;
 	}
+}
+
+EFIAPI void TCPConnectionAccepted (EFI_EVENT Event, VOID *Context)
+{
+	EFI_STATUS             status;
+	EFI_TCP4_LISTEN_TOKEN  *acceptToken;
+	
+	acceptToken = (EFI_TCP4_LISTEN_TOKEN *) Context;
+	status = acceptToken->CompletionToken.Status;
+	
+	if (EFI_ERROR (status)) {
+		Print (L"Connection Error: %d\n", status);
+		return;
+	}
+	
+	EFI_TCP4 *Child = NULL;
+	
+	status = uefi_call_wrapper(BS->OpenProtocol, 6,
+	              acceptToken->NewChildHandle,
+	              &Tcp4Protocol,
+	              (VOID **) &Child,
+	              gImageHandle,
+	              NULL,
+	              EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+	
+	if (EFI_ERROR (status)) {
+		Print (L"Open TCP Connection: %d\n", status);
+		return;
+	}	
 }
 
 static EFI_HANDLE SimpleNetworkProtocolHandle = NULL;
@@ -72,7 +103,7 @@ static EFI_SERVICE_BINDING *ServiceBinding = NULL;
 static bool IsServiceBindingInstalled = false;
 
 extern "C"
-void InitializeBindingProtocol(EFI_HANDLE ImageHandle) {
+void InitializeBindingProtocol() {
 	EFI_STATUS status = uefi_call_wrapper(
 		ST->BootServices->LocateProtocol,
 		3, &Tcp4ServiceBindingProtocol, NULL, (VOID**)&ServiceBinding);
@@ -115,7 +146,7 @@ void InitializeBindingProtocol(EFI_HANDLE ImageHandle) {
 		ServiceBindingHandle = HandleBuffer[0],
         &Tcp4ServiceBindingProtocol,
         (VOID **) &ServiceBinding,
-        ImageHandle,
+        gImageHandle,
         NULL,
         EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 	
@@ -125,7 +156,7 @@ void InitializeBindingProtocol(EFI_HANDLE ImageHandle) {
 }
 
 extern "C"
-void FreeBindingProtocol(EFI_HANDLE ImageHandle) {
+void FreeBindingProtocol() {
 	EFI_STATUS status = 0;
 	
 	if (IsServiceBindingInstalled) {
@@ -141,7 +172,7 @@ void FreeBindingProtocol(EFI_HANDLE ImageHandle) {
 	status =  uefi_call_wrapper(BS->CloseProtocol, 4,
                 ServiceBindingHandle,
                 &Tcp4ServiceBindingProtocol,
-                ImageHandle,
+                gImageHandle,
                 NULL);
 	
 	if (EFI_ERROR(status)) {
@@ -156,12 +187,15 @@ public:
 	EFI_HANDLE Handle = NULL;
 	EFI_IPv4_ADDRESS Address;
 	bool AllReceived = false;
+
+	LSocket (EFI_TCP4 *_Child, EFI_HANDLE _Handle) : Child(_Child), Handle(_Handle) {
+	}
 	
 	LSocket(EFI_IPv4_ADDRESS *_Address, UINT16 _Port) : Port (_Port) {
 		CopyMem(&this->Address, _Address, sizeof (this->Address));
 	}
 	
-	bool CreateChild(EFI_HANDLE ImageHandle) {
+	bool CreateChild() {
 		if (!ServiceBinding) {
 			return false;
 		}
@@ -176,7 +210,7 @@ public:
 	                   Handle,
 	                   &Tcp4Protocol,
 	                   (VOID **)&Child,
-	                   ImageHandle,
+	                   gImageHandle,
 	                   NULL,
 	                   EFI_OPEN_PROTOCOL_GET_PROTOCOL
 	                   );
@@ -379,12 +413,16 @@ public:
 		return true;
 	}
 	
-	void Destroy(EFI_HANDLE ImageHandle) {
+	void Destroy() {
 		EFI_STATUS status =  uefi_call_wrapper(BS->CloseProtocol, 4,
 	                this->Handle,
 	                &Tcp4Protocol,
-	                ImageHandle,
+	                gImageHandle,
 	                NULL);	
+	}
+	
+	LSocket* Accept() {
+		
 	}
 };
 
