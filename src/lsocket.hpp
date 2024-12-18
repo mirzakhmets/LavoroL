@@ -3,6 +3,8 @@
 
 #define _L_SOCKET_
 
+#include <ltask.hpp>
+
 extern "C" EFI_GUID Tcp4Protocol;
 
 extern "C" EFI_GUID Tcp4ServiceBindingProtocol;
@@ -133,7 +135,7 @@ public:
 				r += 10 + i;
 			}
 			
-			// Do events
+			DoEvents();
 		}
 		
 		if (EFI_ERROR(status)) {
@@ -164,7 +166,7 @@ public:
 				Print(L"\r\nError in polling: %d\r\n", status);
 			}
 			
-			// Do events
+			DoEvents();
 		}
 		
 		status = uefi_call_wrapper(BS->CloseEvent, 1, token.CompletionToken.Event);
@@ -218,7 +220,7 @@ public:
 				Print(L"\r\nError in polling: %d\r\n", status);
 			}
 			
-			// Do events
+			DoEvents();
 		}
 		
 		status = uefi_call_wrapper(BS->CloseEvent, 1, iotoken.CompletionToken.Event);
@@ -273,7 +275,7 @@ public:
 				Print(L"\r\nError in polling: %d\r\n", status);
 			}
 			
-			// Do events
+			DoEvents();
 		}
 		
 		status = uefi_call_wrapper(BS->CloseEvent, 1, iotoken.CompletionToken.Event);

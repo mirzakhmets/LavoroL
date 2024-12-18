@@ -5,6 +5,8 @@
 #include <efitcp.h>
 #include <efinet.h>
 #include <efiprot.h>
+
+#include <ltask.hpp>
 #include <lsocket.hpp>
 
 const int MAX_PATH = 256;
@@ -20,6 +22,10 @@ extern "C" void * operator new[] (unsigned long size) {
 }
 
 extern "C" void operator delete (void *buffer) {
+	FreePool((VOID*) buffer);
+}
+
+extern "C" void operator delete (void *buffer, unsigned long size) {
 	FreePool((VOID*) buffer);
 }
 
