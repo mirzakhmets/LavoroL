@@ -9,6 +9,9 @@
 #include <ltask.hpp>
 #include <lsocket.hpp>
 
+#include <lreader.hpp>
+#include <lwriter.hpp>
+
 const int MAX_PATH = 256;
 
 extern "C" int Box_Main();

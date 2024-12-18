@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;2;0;0;0
-UnitCount=105
+UnitCount=108
 
 [VersionInfo]
 Major=1
@@ -720,9 +720,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit106]
-FileName=src\gnu-efi-3.0.18\lib\event.c
+FileName=src\lsocket.cpp
 CompileCpp=1
-Folder=lib
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -730,8 +730,8 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit107]
-FileName=src\gnu-efi-3.0.18\lib\exit.c
-Folder=lib
+FileName=src\ltask.hpp
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -740,9 +740,9 @@ BuildCmd=
 CompileCpp=1
 
 [Unit108]
-FileName=src\gnu-efi-3.0.18\lib\guid.c
+FileName=src\ltask.cpp
 CompileCpp=1
-Folder=lib
+Folder=
 Compile=1
 Link=1
 Priority=1000
