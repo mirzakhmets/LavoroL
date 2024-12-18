@@ -26,6 +26,12 @@ extern "C" void operator delete (void *buffer) {
 extern "C" void __cxa_throw_bad_array_new_length() {
 }
 
+extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
+	if (Child) {
+		LSocket socket (Child, Handle);
+	}
+}
+
 extern "C"
 EFI_STATUS
 EFIAPI
@@ -67,6 +73,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	InitializeNetworkProtocol();
 	
 	InitializeBindingProtocol();
+	
+	TCPConnectionAcceptInitialize();
 	
 	EFI_IPv4_ADDRESS gLocalAddress = { 192, 168, 0, 12 };
 	EFI_IPv4_ADDRESS gSubnetMask = { 255, 255, 255, 0 };
