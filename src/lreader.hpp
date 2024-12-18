@@ -14,9 +14,14 @@ protected:
 	
 	unsigned char buffer[BufferSize];
 	
-	virtual bool ReadBuffer() = 0;
+	virtual bool ReadBuffer() {
+		return false;
+	}
 public:
 	LReader() {
+	}
+	
+	~LReader() {
 	}
 	
 	bool AtEnd() {
@@ -49,9 +54,6 @@ public:
 		}
 		
 		return this->Current();
-	}
-	
-	virtual void Destroy() {
 	}
 };
 

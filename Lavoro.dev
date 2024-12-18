@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;2;0;0;0
-UnitCount=108
+UnitCount=110
 
 [VersionInfo]
 Major=1
@@ -750,9 +750,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit109]
-FileName=src\gnu-efi-3.0.18\lib\hand.c
+FileName=src\lreader.hpp
 CompileCpp=1
-Folder=lib
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -760,9 +760,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit110]
-FileName=src\gnu-efi-3.0.18\lib\hw.c
+FileName=src\lwriter.hpp
 CompileCpp=1
-Folder=lib
+Folder=
 Compile=1
 Link=1
 Priority=1000

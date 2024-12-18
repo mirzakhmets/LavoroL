@@ -23,6 +23,9 @@ public:
 	LTask(UINT16 _Priority) : Priority (_Priority) {
 	}
 	
+	~LTask() {
+	}
+	
 	bool IsRunning() {
 		return Left != NULL || Right != NULL || TaskQueue == this;
 	}
@@ -58,10 +61,7 @@ public:
 		}
 	}
 	
-	virtual void Run() = 0;
-	
-	void Destroy() {
-		
+	virtual void Run() {
 	}
 };
 

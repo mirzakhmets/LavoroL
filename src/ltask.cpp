@@ -27,8 +27,6 @@ void DoEvents() {
 		
 		selectedTask->Dequeue();
 		
-		selectedTask->Destroy();
-		
 		delete selectedTask;
 	}
 }

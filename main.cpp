@@ -6,20 +6,6 @@
 #include <efinet.h>
 #include <efiprot.h>
 
-#include <ltask.hpp>
-#include <lsocket.hpp>
-
-#include <lreader.hpp>
-#include <lwriter.hpp>
-
-const int MAX_PATH = 256;
-
-extern "C" int Box_Main();
-
-extern "C" int Pyramids_Main();
-
-extern "C" int AntTSP_Main();
-
 extern "C" void * operator new[] (unsigned long size) {
 	return (void*) AllocatePool ((UINTN) size);
 }
@@ -35,6 +21,23 @@ extern "C" void operator delete (void *buffer, unsigned long size) {
 extern "C" void __cxa_throw_bad_array_new_length() {
 }
 
+#include <ltask.hpp>
+#include <lsocket.hpp>
+
+#include <lreader.hpp>
+#include <lwriter.hpp>
+
+#include <lfs.hpp>
+#include <lfile.hpp>
+
+const unsigned MAX_PATH = 256;
+
+extern "C" int Box_Main();
+
+extern "C" int Pyramids_Main();
+
+extern "C" int AntTSP_Main();
+
 extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
 	if (Child) {
 		LSocket socket (Child, Handle);
@@ -46,38 +49,12 @@ EFI_STATUS
 EFIAPI
 efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
+
 	InitializeLib(ImageHandle, SystemTable);
 
 	gImageHandle = ImageHandle;
 	
-	Print(L"Welcome to LavoroL!\r\n");
-	
-	EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileInterface = NULL;
-	
-	EFI_STATUS status = uefi_call_wrapper(ST->BootServices->LocateProtocol, 3, &FileSystemProtocol, NULL, (VOID**)&FileInterface);
-
-	CHAR16 szCurrentPath[MAX_PATH];
-
-	StrCpy(szCurrentPath, L"\\");
-
-	if (!EFI_ERROR(status)) {
-		EFI_FILE *file;
-		
-		status = uefi_call_wrapper(FileInterface->OpenVolume, 2, FileInterface, &file);
-
-		if (EFI_ERROR(status)) {
-			Print(L"\r\nError in opening volume: %d\r\n", status);
-		} else {
-			EFI_FILE_SYSTEM_INFO *info = LibFileSystemInfo(file);
-			
-			if (info) {
-				Print(L"\r\nVolume size (Mb): %d\r\n", (unsigned int) (info->VolumeSize / 1024 / 1024));
-				Print(L"Volume label: %s\r\n", info->VolumeLabel);
-			}
-		}
-	} else {
-		Print(L"\r\nError in loading file interface: %d\r\n", status);
-	}
+	InitializeFileSystem();
 	
 	InitializeNetworkProtocol();
 	
@@ -85,6 +62,9 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	
 	TCPConnectionAcceptInitialize();
 	
+	Print(L"Welcome to LavoroL!\r\n");
+	
+	/*
 	EFI_IPv4_ADDRESS gLocalAddress = { 192, 168, 0, 12 };
 	EFI_IPv4_ADDRESS gSubnetMask = { 255, 255, 255, 0 };
 
@@ -115,6 +95,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	FreeBindingProtocol();
 	
 	FreeNetworkProtocol();
+	*/
 	
 	while (1) {
 		CHAR16 szLine[MAX_PATH];
@@ -128,45 +109,31 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 		} else if (!StrCmp(szLine, L"AntTSP")) {
 			AntTSP_Main();
 		} else if (!StrCmp(szLine, L"ls")) {
-			EFI_FILE *file, *newFile;
+			LFile file(szCurrentPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 			
-			status = uefi_call_wrapper(FileInterface->OpenVolume, 2, FileInterface, &file);
+			CHAR8 Buffer[256];
+			UINTN BufferSize = sizeof (Buffer) - 1;
 			
-			if (!EFI_ERROR(status)) {				
-				status = uefi_call_wrapper(file->Open, 5, file, &newFile, szCurrentPath, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+			while (BufferSize) {
+				BufferSize = sizeof (Buffer) - 1;
+				
+				EFI_STATUS status = uefi_call_wrapper(file.Handle->Read, 3, file.Handle, &BufferSize, Buffer);
 				
 				if (EFI_ERROR(status)) {
-					Print(L"\r\nError in opening directory: %d\r\n", status);
-				} else {
-					CHAR16 Buffer[MAX_PATH];
-					
-					UINTN BufferSize = MAX_PATH >> 1;
-					
-					while (BufferSize) {
-						BufferSize = sizeof (Buffer) >> 1;
-						
-						status = uefi_call_wrapper(newFile->Read, 3, newFile, &BufferSize, Buffer);
-						
-						if (EFI_ERROR(status)) {
-							Print(L"\r\nError in reading directory: %d\r\n", status);
-						} else if (BufferSize > 0) {
-							Print(L"\r\n%s%s", ((EFI_FILE_INFO*) Buffer)->FileName,
-								((EFI_FILE_INFO*) Buffer)->Attribute & EFI_FILE_DIRECTORY ? L" [d]" : L"");
-						}
-					}
-					
-					Print(L"\r\n");
-				}				
-			} else {
-				Print(L"\r\nError in opening volume: %d\r\n", status);
+					Print(L"\r\nError in reading directory: %d\r\n", status);
+				} else if (BufferSize > 0) {
+					Print(L"\r\n%s%s", ((EFI_FILE_INFO*) Buffer)->FileName,
+						((EFI_FILE_INFO*) Buffer)->Attribute & EFI_FILE_DIRECTORY ? L" [d]" : L"");
+				}
 			}
+			
+			Print(L"\r\n");
 		} else if (!StrnCmp(szLine, L"cd", 2)) {
 			StrCpy(szCurrentPath, szLine + 3);
 		} else if (!StrCmp(szLine, L"cwd")) {
 			Print(L"\r\n%s\r\n", szCurrentPath);
 		} else if (!StrnCmp(szLine, L"cat", 3)) {
 			CHAR16 szPath[MAX_PATH];
-			
 			CHAR16 *szCatPath = szLine + 4;
 			
 			if (szCatPath[0] != '\\') {
@@ -181,46 +148,34 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 				StrCpy (szPath, szCatPath);
 			}
 			
-			EFI_FILE *file, *newFile;
+			LFile file(szPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 			
-			status = uefi_call_wrapper(FileInterface->OpenVolume, 2, FileInterface, &file);
+			Print (L"\r\n");
 			
-			if (!EFI_ERROR(status)) {
-				status = uefi_call_wrapper(file->Open, 5, file, &newFile, szPath, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+			CHAR16 szBuffer[128];
+			UINTN lBuffer = 0;
+			
+			while (!file.Reader.AtEnd()) {
+				szBuffer[lBuffer++] = file.Reader.Current();
 				
-				if (EFI_ERROR (status)) {
-					Print(L"\r\nError in opening file: %d\r\n", status);
-				} else {
-					CHAR8 Buffer[MAX_PATH];
+				file.Reader.Next();
+				
+				if (lBuffer == 128) {
+					szBuffer[lBuffer] = L'\0';
 					
-					UINTN BufferSize = MAX_PATH >> 1;
+					Print (L"%s", szBuffer);
 					
-					Print(L"\r\n");
-					
-					while (BufferSize) {
-						BufferSize = sizeof (Buffer) >> 1;
-						
-						status = uefi_call_wrapper(newFile->Read, 3, newFile, &BufferSize, Buffer);
-						
-						if (EFI_ERROR(status)) {
-							Print(L"\r\nError in reading file: %d\r\n", status);
-						} else if (BufferSize > 0) {
-							CHAR16 szBuffer[MAX_PATH];
-							
-							Buffer[BufferSize] = '\0';
-							
-							for (UINTN i = 0; i <= BufferSize; ++i) {
-								szBuffer[i] = Buffer[i];
-							}
-							
-							Print(L"%s", szBuffer);
-						}
-					}
-					
-					Print(L"\r\n");
+					lBuffer = 0;
 				}
 			}
 			
+			if (lBuffer) {
+				szBuffer[lBuffer] = L'\0';
+				
+				Print (L"%s", szBuffer);
+			}
+			
+			Print (L"\r\n");
 		}
 	}
 	

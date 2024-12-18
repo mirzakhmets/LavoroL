@@ -59,6 +59,14 @@ public:
 		CopyMem(&this->Address, _Address, sizeof (this->Address));
 	}
 	
+	~LSocket() {
+		EFI_STATUS status =  uefi_call_wrapper(BS->CloseProtocol, 4,
+	                this->Handle,
+	                &Tcp4Protocol,
+	                gImageHandle,
+	                NULL);	
+	}
+	
 	bool CreateChild() {
 		if (!ServiceBinding) {
 			return false;
@@ -303,14 +311,6 @@ public:
 		}
 		
 		return true;
-	}
-	
-	void Destroy() {
-		EFI_STATUS status =  uefi_call_wrapper(BS->CloseProtocol, 4,
-	                this->Handle,
-	                &Tcp4Protocol,
-	                gImageHandle,
-	                NULL);	
 	}
 };
 

@@ -10,9 +10,14 @@ protected:
 	int current = 0;
 	unsigned char buffer[WriterBufferSize];
 	
-	virtual void WriteBuffer() = 0;
+	virtual void WriteBuffer() {
+	}
 public:
 	LWriter() {
+	}
+	
+	~LWriter() {
+		this->WriteBuffer();
 	}
 	
 	void Write(const unsigned char ch) {
@@ -29,11 +34,7 @@ public:
 		for (unsigned i = 0; i != size; ++i, buffer++) {
 			Write (*buffer);
 		}
-	}
-	
-	virtual void Destroy() {
-		this->WriteBuffer();
-	}
+	}	
 };
 
 #endif
