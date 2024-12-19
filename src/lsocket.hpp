@@ -254,10 +254,14 @@ public:
 		    NULL                                            // Default advanced TCP options
 		  };
 		
+		EFI_STATUS status = 0;
+		
 		EFI_IP4_MODE_DATA               Ip4ModeData;
 
-	    do {
-	      EFI_STATUS status = uefi_call_wrapper(Child->GetModeData, 6,
+		status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
+
+	    do {		    	
+	      status = uefi_call_wrapper(Child->GetModeData, 6,
 		  	Child,
 	        NULL, NULL,
 	        &Ip4ModeData,
@@ -266,8 +270,6 @@ public:
 	    	
 	    	DoEvents();
 	    } while (!Ip4ModeData.IsConfigured);
-		
-		EFI_STATUS status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
 		
 		if (EFI_ERROR (status)) {
 			Print (L"\r\nTCP Configure (2): %d\r\n", status);
