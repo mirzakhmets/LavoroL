@@ -211,6 +211,8 @@ public:
 		
 		LSocket *Socket = new LSocket(ChildTCP4, ChildHandle);
 		
+		Socket->Port = this->Port;
+		
 		CopyMem (&Socket->Address, &this->Address, sizeof (this->Address));
 		
 		return Socket;
@@ -244,7 +246,7 @@ public:
 		      TRUE,                                         // Use default address
 		      { {Address.Addr[0], Address.Addr[1], Address.Addr[2], Address.Addr[3]} },                             // IP Address  (ignored - use default)
 		      { {gSubnetMask->Addr[0], gSubnetMask->Addr[1], gSubnetMask->Addr[2], gSubnetMask->Addr[3]} },                             // Subnet mask (ignored - use default)
-		      120,                             				// Station port
+		      this->Port,                             				// Station port
 		      { {gRemoteAddress->Addr[0], gRemoteAddress->Addr[1], gRemoteAddress->Addr[2], gRemoteAddress->Addr[3]} },                             // Remote address: accept any
 		      gRemotePort,                                            // Remote Port: accept any
 		      TRUE                                         // ActiveFlag: be a "server"
@@ -254,7 +256,6 @@ public:
 		
 		EFI_IP4_MODE_DATA               Ip4ModeData;
 
-		/*
 	    do {
 	      EFI_STATUS status = uefi_call_wrapper(Child->GetModeData, 6,
 		  	Child,
@@ -265,7 +266,6 @@ public:
 	    	
 	    	DoEvents();
 	    } while (!Ip4ModeData.IsConfigured);
-		*/
 		
 		EFI_STATUS status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
 		

@@ -151,7 +151,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 		} else if (!StrCmp(szLine, L"connect")) {
 			LSocket* socket = Socket.CreateChild();
 			
-			EFI_IPv4_ADDRESS gSubnetMask = { 255, 255, 255, 0 };
+			EFI_IPv4_ADDRESS gSubnetMask = { 255, 255, 255, 252 };
 			EFI_IPv4_ADDRESS gRemoteAddress = { 217, 69, 139, 200 };
 			
 			UINTN lBuffer = 0;
