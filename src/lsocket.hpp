@@ -259,8 +259,8 @@ public:
 		EFI_IP4_MODE_DATA               Ip4ModeData;
 
 		status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
-
-	    do {		    	
+		
+		do {
 	      status = uefi_call_wrapper(Child->GetModeData, 6,
 		  	Child,
 	        NULL, NULL,
@@ -270,6 +270,8 @@ public:
 	    	
 	    	DoEvents();
 	    } while (!Ip4ModeData.IsConfigured);
+
+		status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
 		
 		if (EFI_ERROR (status)) {
 			Print (L"\r\nTCP Configure (2): %d\r\n", status);
