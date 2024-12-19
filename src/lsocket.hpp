@@ -96,13 +96,11 @@ public:
 	}
 	
 	~LSocket() {
-		/*
 		EFI_STATUS status =  uefi_call_wrapper(BS->CloseProtocol, 4,
 	                this->Handle,
 	                &Tcp4Protocol,
 	                gImageHandle,
 	                NULL);
-	    */
 	}
 	
 	bool CreateChild() {
@@ -189,7 +187,7 @@ public:
 		}
 		
 		EFI_TCP4_CONNECTION_TOKEN token;
-										
+		
 		status = uefi_call_wrapper(BS->CreateEvent, 5, EVT_NOTIFY_SIGNAL,
 			TPL_CALLBACK, (EFI_EVENT_NOTIFY) TCPCompletionTokenEvent, &token.CompletionToken, &token.CompletionToken.Event);
 		

@@ -63,6 +63,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	
 	InitializeFileSystem();
 	
+	EFI_IPv4_ADDRESS gLocalAddress = { 192, 168, 0, 12 };
+
+	LSocket Socket(&gLocalAddress, 100);
+	
+	Socket.CreateChild();
+	
 	while (1) {
 		CHAR16 szLine[MAX_PATH];
 		
@@ -141,30 +147,22 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 			Print (L"\r\n");
 		} else if (!StrCmp(szLine, L"connect")) {
-			EFI_IPv4_ADDRESS gLocalAddress = { 192, 168, 0, 12 };
 			EFI_IPv4_ADDRESS gSubnetMask = { 255, 255, 255, 0 };
-			
 			EFI_IPv4_ADDRESS gRemoteAddress = { 217, 69, 139, 200 };
 		
 			UINTN lBuffer = 0;
 			CHAR16 szBuffer[130];
 
-			LSocket socket(&gLocalAddress, 100);
-
-			socket.CreateChild();
+			Socket.Connect(&gRemoteAddress, &gSubnetMask, 80);
 			
-			socket.Connect(&gRemoteAddress, &gSubnetMask, 80);
+			Socket.Writer.Write("GET / HTTP/1.0\r\n\r\n", 20);
 			
-			socket.Writer.Write("GET / HTTP/1.0\r\n\r\n", 20);
+			Socket.Writer.Flush();
 			
-			//socket.Transmit("GET / HTTP/1.0\r\n\r\n", 20);
-			
-			socket.Writer.Flush();
-			
-			while (!socket.Reader.AtEnd()) {
-				szBuffer[lBuffer++] = socket.Reader.Current();
+			while (!Socket.Reader.AtEnd()) {
+				szBuffer[lBuffer++] = Socket.Reader.Current();
 				
-				socket.Reader.Next();
+				Socket.Reader.Next();
 				
 				if (lBuffer == 128) {
 					szBuffer[lBuffer] = L'\0';
@@ -174,22 +172,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 					Print(L"%s", szBuffer);
 				}
 			}
-			
-			/*
-			lBuffer = sizeof (dataBuf);
-			
-			socket.Receive(dataBuf, &lBuffer);
-			
-			for (int i = 0; i < lBuffer; ++i) {
-				szBuffer[i] = dataBuf[i];
-			}
-			
-			szBuffer[lBuffer] = L'\0';
-			
-			Print(L"%s", szBuffer);
-			
-			Print (L"7\r\n");
-			*/
 			
 			if (lBuffer) {
 				szBuffer[lBuffer] = L'\0';
