@@ -17,22 +17,26 @@ public:
 	}
 	
 	~LWriter() {
+		this->Flush();
+	}
+	
+	void Flush() {
 		this->WriteBuffer();
+		
+		this->current = 0;
 	}
 	
 	void Write(const unsigned char ch) {
 		if (current == sizeof(buffer)) {
-			WriteBuffer();
-			
-			current = 0;
+			this->Flush();
 		}
 		
 		buffer[current++] = ch;
 	}
 	
-	void Write(const unsigned char *buffer, const unsigned size) {
-		for (unsigned i = 0; i != size; ++i, buffer++) {
-			Write (*buffer);
+	void Write(const unsigned char *pbuffer, const unsigned size) {
+		for (unsigned i = 0; i != size; ++i, pbuffer++) {
+			Write (*pbuffer);
 		}
 	}	
 };

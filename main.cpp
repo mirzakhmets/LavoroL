@@ -49,12 +49,11 @@ EFI_STATUS
 EFIAPI
 efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
-
 	InitializeLib(ImageHandle, SystemTable);
 
+	Print(L"Welcome to LavoroL!\r\n");
+
 	gImageHandle = ImageHandle;
-	
-	InitializeFileSystem();
 	
 	InitializeNetworkProtocol();
 	
@@ -62,40 +61,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	
 	TCPConnectionAcceptInitialize();
 	
-	Print(L"Welcome to LavoroL!\r\n");
-	
-	/*
-	EFI_IPv4_ADDRESS gLocalAddress = { 192, 168, 0, 12 };
-	EFI_IPv4_ADDRESS gSubnetMask = { 255, 255, 255, 0 };
-
-	EFI_IPv4_ADDRESS gRemoteAddress = { 217, 69, 139, 200 };
-
-	CHAR8 databuf[4096];
-	CHAR16 szBuffer[4096];
-	UINTN bufferLength = sizeof (databuf);
-	
-	LSocket socket(&gLocalAddress, 100);
-	
-	socket.CreateChild();
-	
-	socket.Connect(&gRemoteAddress, &gSubnetMask, 80);
-	
-	socket.Transmit("GET / HTTP/1.0\r\n\r\n", 20);
-	
-	socket.Receive(databuf, &bufferLength);
-	
-	for (int i = 0; i < bufferLength; ++i) {
-		szBuffer[i] = databuf[i];
-	}
-	
-	szBuffer[bufferLength] = '\0';
-	
-	Print(L"%s\r\n", szBuffer);
-	
-	FreeBindingProtocol();
-	
-	FreeNetworkProtocol();
-	*/
+	InitializeFileSystem();
 	
 	while (1) {
 		CHAR16 szLine[MAX_PATH];
@@ -152,13 +118,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 			Print (L"\r\n");
 			
-			CHAR16 szBuffer[128];
+			CHAR16 szBuffer[130];
 			UINTN lBuffer = 0;
 			
 			while (!file.Reader.AtEnd()) {
-				szBuffer[lBuffer++] = file.Reader.Current();
-				
-				file.Reader.Next();
+				szBuffer[lBuffer++] = file.Reader.Next();
 				
 				if (lBuffer == 128) {
 					szBuffer[lBuffer] = L'\0';
@@ -176,8 +140,70 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			}
 			
 			Print (L"\r\n");
+		} else if (!StrCmp(szLine, L"connect")) {
+			EFI_IPv4_ADDRESS gLocalAddress = { 192, 168, 0, 12 };
+			EFI_IPv4_ADDRESS gSubnetMask = { 255, 255, 255, 0 };
+			
+			EFI_IPv4_ADDRESS gRemoteAddress = { 217, 69, 139, 200 };
+		
+			UINTN lBuffer = 0;
+			CHAR16 szBuffer[130];
+
+			LSocket socket(&gLocalAddress, 100);
+
+			socket.CreateChild();
+			
+			socket.Connect(&gRemoteAddress, &gSubnetMask, 80);
+			
+			socket.Writer.Write("GET / HTTP/1.0\r\n\r\n", 20);
+			
+			//socket.Transmit("GET / HTTP/1.0\r\n\r\n", 20);
+			
+			socket.Writer.Flush();
+			
+			while (!socket.Reader.AtEnd()) {
+				szBuffer[lBuffer++] = socket.Reader.Current();
+				
+				socket.Reader.Next();
+				
+				if (lBuffer == 128) {
+					szBuffer[lBuffer] = L'\0';
+					
+					lBuffer = 0;
+					
+					Print(L"%s", szBuffer);
+				}
+			}
+			
+			/*
+			lBuffer = sizeof (dataBuf);
+			
+			socket.Receive(dataBuf, &lBuffer);
+			
+			for (int i = 0; i < lBuffer; ++i) {
+				szBuffer[i] = dataBuf[i];
+			}
+			
+			szBuffer[lBuffer] = L'\0';
+			
+			Print(L"%s", szBuffer);
+			
+			Print (L"7\r\n");
+			*/
+			
+			if (lBuffer) {
+				szBuffer[lBuffer] = L'\0';
+			
+				Print(L"%s\r\n", szBuffer);
+			}			
+			
+			Print(L"\r\n");
 		}
 	}
+	
+	FreeBindingProtocol();
+	
+	FreeNetworkProtocol();
 	
 	return EFI_SUCCESS;
 }

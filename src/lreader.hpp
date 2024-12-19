@@ -25,13 +25,15 @@ public:
 	}
 	
 	bool AtEnd() {
-		if (size == ~0) {
+		if (size == ~0U) {
 			return true;
 		}
 		
 		if (current == size) {
 			if (!this->ReadBuffer()) {
 				size = ~0U;
+				
+				return true;
 			} else {
 				current = 0;
 			}
@@ -49,8 +51,20 @@ public:
 	}
 	
 	int Next() {
+		if (this->AtEnd()) {
+			return ReaderEof;
+		}
+		
 		if (this->current != this->size) {
 			this->current++;
+		} else {
+			if (!this->ReadBuffer()) {
+				size = ~0U;
+				
+				Print (L"OK1\r\n");
+			} else {
+				current = 0;	
+			}
 		}
 		
 		return this->Current();

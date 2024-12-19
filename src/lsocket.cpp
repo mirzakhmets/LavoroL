@@ -27,7 +27,7 @@ extern "C" void TCPCompletionTokenEventFinish() {
 }
 
 extern "C" bool TCPCompletionTokenEventRunning() {
-	return TCPEventStatus != 0;
+	return TCPEventStatus;
 }
 
 extern "C" 
@@ -67,7 +67,7 @@ void InitializeNetworkProtocol() {
 		
 		status = uefi_call_wrapper(
 			SimpleNetworkProtocolInterface->Start, 1, SimpleNetworkProtocolInterface);
-	
+		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in starting simple protocol: %d\r\n", status);
 		}

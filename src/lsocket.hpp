@@ -5,6 +5,9 @@
 
 #include <ltask.hpp>
 
+#include <lreader.hpp>
+#include <lwriter.hpp>
+
 extern "C" EFI_GUID Tcp4Protocol;
 
 extern "C" EFI_GUID Tcp4ServiceBindingProtocol;
@@ -44,6 +47,36 @@ extern "C" void FreeBindingProtocol();
 
 extern "C" EFI_TCP4_LISTEN_TOKEN TCPConnectionAcceptToken;
 
+class LSocket;
+
+class LSocketReader : public LReader {
+protected:
+	virtual bool ReadBuffer();
+	
+public:
+	LSocket *Socket = NULL;
+	
+	LSocketReader(LSocket *_Socket) : Socket (_Socket) {
+	}
+	
+	virtual ~LSocketReader() {
+	}
+};
+
+class LSocketWriter : public LWriter {
+protected:
+	virtual void WriteBuffer();
+	
+public:
+	LSocket *Socket = NULL;
+	
+	LSocketWriter(LSocket *_Socket) : Socket (_Socket) {
+	}
+	
+	virtual ~LSocketWriter() {
+	}
+};
+
 class LSocket {
 public:
 	UINT16 Port;
@@ -51,20 +84,25 @@ public:
 	EFI_HANDLE Handle = NULL;
 	EFI_IPv4_ADDRESS Address;
 	bool AllReceived = false;
-
-	LSocket (EFI_TCP4 *_Child, EFI_HANDLE _Handle) : Child(_Child), Handle(_Handle) {
+	
+	LSocketReader Reader;
+	LSocketWriter Writer;
+	
+	LSocket (EFI_TCP4 *_Child, EFI_HANDLE _Handle) : Child(_Child), Handle(_Handle), Reader(this), Writer(this) {
 	}
 	
-	LSocket(EFI_IPv4_ADDRESS *_Address, UINT16 _Port) : Port (_Port) {
+	LSocket(EFI_IPv4_ADDRESS *_Address, UINT16 _Port) : Port (_Port), Reader(this), Writer(this) {
 		CopyMem(&this->Address, _Address, sizeof (this->Address));
 	}
 	
 	~LSocket() {
+		/*
 		EFI_STATUS status =  uefi_call_wrapper(BS->CloseProtocol, 4,
 	                this->Handle,
 	                &Tcp4Protocol,
 	                gImageHandle,
-	                NULL);	
+	                NULL);
+	    */
 	}
 	
 	bool CreateChild() {
@@ -130,7 +168,7 @@ public:
 		ap->ActiveFlag = TRUE;
 		
 		CopyMem(&ap->StationAddress, &this->Address, sizeof (this->Address));
-		ConfigData.ControlOption = Tcp4ConfigData.ControlOption;
+		//ConfigData.ControlOption = Tcp4ConfigData.ControlOption;
 		ConfigData.TimeToLive = 800;
 		
 		EFI_STATUS status = uefi_call_wrapper(this->Child->Configure, 2, this->Child, &ConfigData);
@@ -286,15 +324,19 @@ public:
 			DoEvents();
 		}
 		
+		if (EFI_ERROR(iotoken.CompletionToken.Status)) {
+			*databufLength = 0;
+		} else {
+			*databufLength = frag->FragmentLength;
+		}
+		
 		status = uefi_call_wrapper(BS->CloseEvent, 1, iotoken.CompletionToken.Event);
 		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in closing event (3): %d\r\n", status);
 		}
 		
-		*databufLength = frag->FragmentLength;
-		
-		return true;
+		return *databufLength;
 	}
 	
 	bool Accept() {
@@ -313,5 +355,33 @@ public:
 		return true;
 	}
 };
+
+bool LSocketReader::ReadBuffer() {
+	if (Socket) {
+		UINTN BufferSize = sizeof (this->buffer);
+		
+		if (Socket->AllReceived) {
+			return false;
+		}
+		
+		if (!Socket->Receive(this->buffer, &BufferSize)) {
+			return false;
+		}
+		
+		this->current = 0;
+		
+		this->size = BufferSize;
+
+		return this->current != this->size;
+	}
+	
+	return false;
+}
+
+void LSocketWriter::WriteBuffer() {
+	if (Socket && this->current) {
+		Socket->Transmit(this->buffer, this->current);
+	}
+}
 
 #endif

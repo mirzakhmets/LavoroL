@@ -45,7 +45,7 @@ public:
 	LFileReader Reader;
 	LFileWriter Writer;
 	
-	EFI_FILE* Handle = NULL;	
+	EFI_FILE* Handle = NULL;
 	
 	LFile(const CHAR16 *Path, EFI_FILE *_Handle, UINT64 Mode, UINT64 Attributes) : Handle (_Handle), Reader (this), Writer (this) {
 		if (!Handle && StrLen(Path) > 0) {
@@ -131,12 +131,10 @@ bool LFileReader::ReadBuffer() {
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in reading file: %d\r\n", status);
 			
-			this->size = ~0;
-			
 			return false;
 		}
 		
-		return true;
+		return this->current != this->size;
 	}
 	
 	return false;
@@ -147,8 +145,6 @@ void LFileWriter::WriteBuffer() {
 		UINTN BufferSize = this->current;
 		
 		EFI_STATUS status = uefi_call_wrapper(File->Handle->Write, 3, File->Handle, &BufferSize, this->buffer);
-		
-		this->current = BufferSize;
 		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in reading file: %d\r\n", status);
