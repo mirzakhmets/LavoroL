@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;2;0;0;0
-UnitCount=110
+UnitCount=113
 
 [VersionInfo]
 Major=1
@@ -770,9 +770,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit111]
-FileName=src\gnu-efi-3.0.18\lib\init.c
+FileName=src\lfs.cpp
 CompileCpp=1
-Folder=lib
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -780,8 +780,8 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit112]
-FileName=src\gnu-efi-3.0.18\lib\lock.c
-Folder=lib
+FileName=src\lfs.hpp
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -790,29 +790,9 @@ BuildCmd=
 CompileCpp=1
 
 [Unit113]
-FileName=src\gnu-efi-3.0.18\lib\Makefile
+FileName=src\lfile.hpp
 CompileCpp=1
-Folder=lib
-Compile=0
-Link=0
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit114]
-FileName=src\gnu-efi-3.0.18\lib\misc.c
-CompileCpp=1
-Folder=lib
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
-
-[Unit115]
-FileName=src\gnu-efi-3.0.18\lib\pause.c
-CompileCpp=1
-Folder=lib
+Folder=
 Compile=1
 Link=1
 Priority=1000

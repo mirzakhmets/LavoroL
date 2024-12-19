@@ -47,6 +47,16 @@ extern "C" void FreeBindingProtocol();
 
 extern "C" EFI_TCP4_LISTEN_TOKEN TCPConnectionAcceptToken;
 
+#define IP4_ADDR_TO_STRING(IpAddr, IpAddrString) UnicodeSPrint (       \
+                                                   IpAddrString,       \
+                                                   16 * 2,             \
+                                                   L"%d.%d.%d.%d",     \
+                                                   IpAddr.Addr[0],     \
+                                                   IpAddr.Addr[1],     \
+                                                   IpAddr.Addr[2],     \
+                                                   IpAddr.Addr[3]      \
+                                                   );
+
 class LSocket;
 
 class LSocketReader : public LReader {
@@ -128,6 +138,51 @@ public:
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in opening protocol: %d\r\n", status);
 		}
+		
+		EFI_TCP4_CONFIG_DATA TcpConfigData = {
+		    0x00,                                           // IPv4 Type of Service
+		    255,                                            // IPv4 Time to Live
+		    {                                               // AccessPoint:
+		      TRUE,                                         // Use default address
+		      { {Address.Addr[0], Address.Addr[1], Address.Addr[2], Address.Addr[3]} },
+		      //{ {0, 0, 0, 0} },                             // IP Address  (ignored - use default)
+		      //{ {0, 0, 0, 0} },                             // Subnet mask (ignored - use default)
+		      { {255, 255, 255, 0} },                             // Subnet mask (ignored - use default)
+		      80,                             				// Station port
+		      { {0, 0, 0, 0} },                             // Remote address: accept any
+		      0,                                            // Remote Port: accept any
+		      FALSE                                         // ActiveFlag: be a "server"
+		    },
+		    NULL                                            // Default advanced TCP options
+		  };
+		
+		EFI_IP4_MODE_DATA               Ip4ModeData;
+		
+		status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
+		
+		if (status == EFI_NO_MAPPING) {
+			do {
+		      status = uefi_call_wrapper(Child->GetModeData, 6,
+			  	Child,
+		        NULL, NULL,
+		        &Ip4ModeData,
+		        NULL, NULL
+		    	);
+		    } while (!Ip4ModeData.IsConfigured);
+			
+		    status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
+		} else if (EFI_ERROR (status)) {
+		    Print (L"\r\nTCP Configure: %d\r\n", status);
+		}
+		
+		CHAR16                          IpAddrString[16];
+		
+		IP4_ADDR_TO_STRING (Ip4ModeData.ConfigData.StationAddress, IpAddrString);
+		
+		Print( L"TCP transport configured.\r\n");
+		Print (L"IP address: ");
+		Print (L"%s\r\n", IpAddrString);
+		Print (L"\r\n");
 	}
 	
 	LSocket* CreateChild() {
@@ -154,7 +209,11 @@ public:
 			Print(L"\r\nError in opening protocol: %d\r\n", status);
 		}
 		
-		return new LSocket(ChildTCP4, ChildHandle);
+		LSocket *Socket = new LSocket(ChildTCP4, ChildHandle);
+		
+		CopyMem (&Socket->Address, &this->Address, sizeof (this->Address));
+		
+		return Socket;
 	}
 	
 	void DestroyChild() {
@@ -178,55 +237,40 @@ public:
 			return false;
 		}
 		
-		EFI_TCP4_CONNECTION_STATE       Tcp4State;
-    	EFI_TCP4_CONFIG_DATA            Tcp4ConfigData;
-	    EFI_IP4_MODE_DATA               Ip4ModeData;
-    	EFI_MANAGED_NETWORK_CONFIG_DATA MnpConfigData;
-    	EFI_SIMPLE_NETWORK_MODE         SnpModeData;
+		EFI_TCP4_CONFIG_DATA TcpConfigData = {
+		    0x00,                                           // IPv4 Type of Service
+		    255,                                            // IPv4 Time to Live
+		    {                                               // AccessPoint:
+		      TRUE,                                         // Use default address
+		      { {Address.Addr[0], Address.Addr[1], Address.Addr[2], Address.Addr[3]} },                             // IP Address  (ignored - use default)
+		      { {gSubnetMask->Addr[0], gSubnetMask->Addr[1], gSubnetMask->Addr[2], gSubnetMask->Addr[3]} },                             // Subnet mask (ignored - use default)
+		      120,                             				// Station port
+		      { {gRemoteAddress->Addr[0], gRemoteAddress->Addr[1], gRemoteAddress->Addr[2], gRemoteAddress->Addr[3]} },                             // Remote address: accept any
+		      gRemotePort,                                            // Remote Port: accept any
+		      TRUE                                         // ActiveFlag: be a "server"
+		    },
+		    NULL                                            // Default advanced TCP options
+		  };
 		
-		/*
-		EFI_STATUS status = uefi_call_wrapper(this->Child->GetModeData,
-			6, this->Child, &Tcp4State, &Tcp4ConfigData, &Ip4ModeData, &MnpConfigData, &SnpModeData);
+		EFI_IP4_MODE_DATA               Ip4ModeData;
 
-		if (EFI_ERROR(status)) {
-			Print(L"\r\nError getting mode data: %d\r\n", status);
-		}
+		/*
+	    do {
+	      EFI_STATUS status = uefi_call_wrapper(Child->GetModeData, 6,
+		  	Child,
+	        NULL, NULL,
+	        &Ip4ModeData,
+	        NULL, NULL
+	    	);
+	    	
+	    	DoEvents();
+	    } while (!Ip4ModeData.IsConfigured);
 		*/
 		
-		EFI_TCP4_CONFIG_DATA ConfigData;
-		EFI_TCP4_ACCESS_POINT *ap = &ConfigData.AccessPoint;
-
-		ZeroMem(&ConfigData, sizeof(ConfigData));
-				
-		ConfigData.TypeOfService = 0;
-	    ap->UseDefaultAddress = TRUE;
+		EFI_STATUS status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
 		
-		CopyMem(&ap->RemoteAddress, gRemoteAddress, sizeof(*gRemoteAddress));
-		CopyMem(&ap->SubnetMask, gSubnetMask, sizeof (*gSubnetMask));
-		
-		ap->StationPort = this->Port;
-		ap->RemotePort = gRemotePort;
-		ap->ActiveFlag = TRUE;
-		
-		CopyMem(&ap->StationAddress, &this->Address, sizeof (this->Address));
-		//ConfigData.ControlOption = Tcp4ConfigData.ControlOption;
-		ConfigData.TimeToLive = 800;
-		
-		EFI_STATUS status = uefi_call_wrapper(this->Child->Configure, 2, this->Child, &ConfigData);
-		
-		while (status == EFI_NO_MAPPING) {
-			status = uefi_call_wrapper(this->Child->Configure, 2, this->Child, &ConfigData);
-			
-			int r = 0;
-			for (int i = 0; i < 1000000; ++i) {
-				r += 10 + i;
-			}
-			
-			DoEvents();
-		}
-		
-		if (EFI_ERROR(status)) {
-			Print(L"\r\nError in configuring TCP protocol: %d\r\n", status);
+		if (EFI_ERROR (status)) {
+			Print (L"\r\nTCP Configure (2): %d\r\n", status);
 		}
 		
 		EFI_TCP4_CONNECTION_TOKEN token;
