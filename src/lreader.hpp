@@ -5,7 +5,7 @@
 
 const int ReaderEof = -1;
 
-const int BufferSize = 128;
+const int BufferSize = 12;
 
 class LReader {
 protected:

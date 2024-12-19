@@ -44,7 +44,7 @@ extern "C" int AntTSP_Main();
 
 extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
 	if (Child) {
-		LSocket socket (Child, Handle);
+		//LSocket socket (Child, Handle);
 	}
 }
 
@@ -61,16 +61,19 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	
 	InitializeFileSystem();
 	
-	InitializeNetworkProtocol();
+	//InitializeNetworkProtocol();
 			
-	InitializeBindingProtocol();
-	
 	TCPConnectionAcceptInitialize();
 	
-	EFI_IPv4_ADDRESS gLocalAddress = { 192, 168, 0, 14 };
+	EFI_IPv4_ADDRESS Addresses[4] = {
+		{217, 69, 139, 200},
+		{5, 61, 23, 11},
+		{90, 156, 201, 79},
+		{81, 19, 72, 34}
+	};
 	
-	LSocket Socket(&gLocalAddress, 100);
-		
+	int CurrentAddress = 0;
+	
 	while (1) {
 		CHAR16 szLine[MAX_PATH];
 		
@@ -149,26 +152,34 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 			Print (L"\r\n");
 		} else if (!StrCmp(szLine, L"connect")) {
-			LSocket* socket = Socket.CreateChild();
+			InitializeBindingProtocol();
+	
+			EFI_IPv4_ADDRESS gLocalAddress = { 192, 168, 0, 14 };
+	
+			LSocket Socket(TCP4, TCP4Handle, &gLocalAddress, 120);
+	
+			//LSocket* socket = Socket.CreateChild();
 			
 			EFI_IPv4_ADDRESS gSubnetMask = { 255, 255, 255, 252 };
-			EFI_IPv4_ADDRESS gRemoteAddress = { 217, 69, 139, 200 };
+			EFI_IPv4_ADDRESS gRemoteAddress = { 5, 61, 23, 11 };
+			
+			CopyMem(&gRemoteAddress, Addresses + ((CurrentAddress++) % 4), sizeof (gRemoteAddress));
 			
 			UINTN lBuffer = 0;
-			//CHAR8 sBuffer[130];
-			CHAR16 szBuffer[130];
+			CHAR8 sBuffer[10280];
+			CHAR16 szBuffer[10280];
 
-			socket->Connect(&gRemoteAddress, &gSubnetMask, 80);
+			Socket.Connect(&gRemoteAddress, &gSubnetMask, 80);
 			
-			socket->Writer.Write("GET / HTTP/1.0\r\n\r\n", 20);
+			//Socket.Writer.Write("GET / HTTP/1.0\r\n\r\n", 20);
 			
-			socket->Writer.Flush();
+			//Socket.Writer.Flush();
 			
-			//socket->Transmit("GET / HTTP/1.0\r\n\r\n", 20);
+			Socket.Transmit("GET / HTTP/1.0\r\n\r\n", 20);
 			
-			/*lBuffer = sizeof (sBuffer);
+			lBuffer = sizeof (sBuffer);
 			
-			socket->Receive(sBuffer, &lBuffer);
+			Socket.Receive(sBuffer, &lBuffer);
 			
 			for (int i = 0; i < lBuffer; ++i) {
 				szBuffer[i] = sBuffer[i];
@@ -177,12 +188,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			szBuffer[lBuffer] = L'\0';
 			
 			Print (L"%s\r\n", szBuffer);
-			*/
 			
-			while (!socket->Reader.AtEnd()) {
-				szBuffer[lBuffer++] = socket->Reader.Current();
+			/*
+			while (!Socket.Reader.AtEnd()) {
+				szBuffer[lBuffer++] = Socket.Reader.Current();
 				
-				socket->Reader.Next();
+				Socket.Reader.Next();
 				
 				if (lBuffer == 128) {
 					szBuffer[lBuffer] = L'\0';
@@ -198,16 +209,17 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 				Print(L"%s\r\n", szBuffer);
 			}
+			*/
 			
 			Print(L"\r\n");
 			
-			delete socket;
+			//delete socket;
 		}
 	}
 	
-	FreeBindingProtocol();
+	//FreeBindingProtocol();
 	
-	FreeNetworkProtocol();
+	//FreeNetworkProtocol();
 			
 	return EFI_SUCCESS;
 }

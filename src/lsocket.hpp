@@ -47,6 +47,10 @@ extern "C" void FreeBindingProtocol();
 
 extern "C" EFI_TCP4_LISTEN_TOKEN TCPConnectionAcceptToken;
 
+extern "C" EFI_TCP4 *TCP4;
+
+extern "C" EFI_HANDLE TCP4Handle;
+
 #define IP4_ADDR_TO_STRING(IpAddr, IpAddrString) UnicodeSPrint (       \
                                                    IpAddrString,       \
                                                    16 * 2,             \
@@ -98,13 +102,14 @@ public:
 	LSocketReader Reader;
 	LSocketWriter Writer;
 	
-	LSocket (EFI_TCP4 *_Child, EFI_HANDLE _Handle) : Child(_Child), Handle(_Handle), Reader(this), Writer(this) {
+	LSocket (EFI_TCP4 *_Child, EFI_HANDLE _Handle, EFI_IPv4_ADDRESS *_Address, UINT16 _Port) : Child(_Child), Handle(_Handle), Reader(this), Writer(this), Port (_Port) {
+		CopyMem(&this->Address, _Address, sizeof (this->Address));
 	}
 	
 	LSocket(EFI_IPv4_ADDRESS *_Address, UINT16 _Port) : Port (_Port), Reader(this), Writer(this) {
 		CopyMem(&this->Address, _Address, sizeof (this->Address));
 		
-		this->Initialize();
+		//this->Initialize();
 	}
 	
 	~LSocket() {
@@ -116,10 +121,13 @@ public:
 	                NULL);
 	    */
 	    
-	    this->DestroyChild();
+	    //this->DestroyChild();
+	    
+	    FreeBindingProtocol();
 	}
 	
 	void Initialize() {
+		/*
 		EFI_STATUS status = uefi_call_wrapper(ServiceBinding->CreateChild, 2, ServiceBinding, &Handle);
 
 		if (EFI_ERROR(status)) {
@@ -183,9 +191,11 @@ public:
 		Print (L"IP address: ");
 		Print (L"%s\r\n", IpAddrString);
 		Print (L"\r\n");
+		*/
 	}
 	
 	LSocket* CreateChild() {
+		/*
 		EFI_TCP4 *ChildTCP4 = NULL;
 		
 		EFI_HANDLE ChildHandle = NULL;		
@@ -216,9 +226,11 @@ public:
 		CopyMem (&Socket->Address, &this->Address, sizeof (this->Address));
 		
 		return Socket;
+		*/
 	}
 	
 	void DestroyChild() {
+		/*
 		if (!ServiceBinding || !Child || !Handle) {
 			return;
 		}
@@ -232,6 +244,7 @@ public:
 		Child = NULL;
 		
 		Handle = NULL;
+		*/
 	}
 	
 	bool Connect(EFI_IPv4_ADDRESS *gRemoteAddress, EFI_IPv4_ADDRESS *gSubnetMask, UINT16 gRemotePort) {
@@ -244,8 +257,18 @@ public:
 		    255,                                            // IPv4 Time to Live
 		    {                                               // AccessPoint:
 		      TRUE,                                         // Use default address
-		      { {Address.Addr[0], Address.Addr[1], Address.Addr[2], Address.Addr[3]} },                             // IP Address  (ignored - use default)
-		      { {gSubnetMask->Addr[0], gSubnetMask->Addr[1], gSubnetMask->Addr[2], gSubnetMask->Addr[3]} },                             // Subnet mask (ignored - use default)
+		      {
+		      	{
+		      		0, 0, 0, 0
+				  }
+			  },
+			  {
+		      	{
+		      		0, 0, 0, 0
+				  }
+			  },
+		      //{ {Address.Addr[0], Address.Addr[1], Address.Addr[2], Address.Addr[3]} },                             // IP Address  (ignored - use default)
+		      //{ {gSubnetMask->Addr[0], gSubnetMask->Addr[1], gSubnetMask->Addr[2], gSubnetMask->Addr[3]} },                             // Subnet mask (ignored - use default)
 		      this->Port,                             				// Station port
 		      { {gRemoteAddress->Addr[0], gRemoteAddress->Addr[1], gRemoteAddress->Addr[2], gRemoteAddress->Addr[3]} },                             // Remote address: accept any
 		      gRemotePort,                                            // Remote Port: accept any
@@ -260,6 +283,7 @@ public:
 
 		status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
 		
+		/*
 		do {
 	      status = uefi_call_wrapper(Child->GetModeData, 6,
 		  	Child,
@@ -272,6 +296,7 @@ public:
 	    } while (!Ip4ModeData.IsConfigured);
 
 		status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
+		*/
 		
 		if (EFI_ERROR (status)) {
 			Print (L"\r\nTCP Configure (2): %d\r\n", status);

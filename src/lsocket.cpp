@@ -48,6 +48,7 @@ extern "C" EFI_SIMPLE_NETWORK_PROTOCOL *SimpleNetworkProtocolInterface = NULL;
 
 extern "C"
 void InitializeNetworkProtocol() {
+	/*
 	EFI_STATUS status = uefi_call_wrapper(
 		ST->BootServices->LocateProtocol,
 		3, &gEfiSimpleNetworkProtocolGuid, NULL, (VOID**)&SimpleNetworkProtocolInterface);
@@ -71,11 +72,12 @@ void InitializeNetworkProtocol() {
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in starting simple protocol: %d\r\n", status);
 		}
-	}
+	}*/
 }
 
 extern "C"
 void FreeNetworkProtocol() {
+	/*
 	if (SimpleNetworkProtocolHandle) {
 		EFI_STATUS status = uefi_call_wrapper(BS->UninstallMultipleProtocolInterfaces, 4, &SimpleNetworkProtocolHandle,
 			&gEfiSimpleNetworkProtocolGuid, &SimpleNetworkProtocolInterface,
@@ -88,14 +90,19 @@ void FreeNetworkProtocol() {
 	
 	SimpleNetworkProtocolHandle = NULL;
 	SimpleNetworkProtocolInterface = NULL;
+	*/
 }
 
 extern "C" EFI_HANDLE ServiceBindingHandle = NULL;
 extern "C" EFI_SERVICE_BINDING *ServiceBinding = NULL;
 extern "C" bool IsServiceBindingInstalled = false;
 
+extern "C" EFI_TCP4 *TCP4 = NULL;
+extern "C" EFI_HANDLE TCP4Handle = NULL;
+
 extern "C" 
-void InitializeBindingProtocol() {
+void InitializeBindingProtocol(EFI_HANDLE ImageHandle) {
+	/*
 	EFI_STATUS status = uefi_call_wrapper(
 		ST->BootServices->LocateProtocol,
 		3, &Tcp4ServiceBindingProtocol, NULL, (VOID**)&ServiceBinding);
@@ -103,6 +110,7 @@ void InitializeBindingProtocol() {
 	if (EFI_ERROR(status)) {
 		Print(L"\r\nError in locating protocol: %d\r\n", status);
 	}
+	*/
 	
 	//if (SimpleNetworkProtocolHandle) {
 	//	ServiceBindingHandle = SimpleNetworkProtocolHandle;
@@ -110,6 +118,23 @@ void InitializeBindingProtocol() {
 	
 	//ServiceBindingHandle = NULL;
 	//ServiceBindingHandle = SimpleNetworkProtocolHandle;
+	EFI_HANDLE protocol, child, *handles = NULL;
+    UINTN i, nr_handles = 0;
+	EFI_STATUS status = LibLocateHandle(ByProtocol, &Tcp4ServiceBindingProtocol, NULL, &nr_handles, &handles);
+	
+	for (i = 0; i < nr_handles; i++) {
+	status = uefi_call_wrapper(BS->OpenProtocol, 6, handles[i],
+				   &Tcp4ServiceBindingProtocol, (void **)&ServiceBinding,
+				   ImageHandle, handles[i],
+				   EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+	if (status == EFI_SUCCESS) {
+		ServiceBindingHandle = handles[i];
+			    break;
+	}
+		
+		uefi_call_wrapper(BS->CloseProtocol, 4, handles[i], &Tcp4ServiceBindingProtocol,
+			  ImageHandle, handles[i]);
+    }
 	
 	if (!ServiceBinding) {
 		status = uefi_call_wrapper(BS->InstallMultipleProtocolInterfaces, 4, &ServiceBindingHandle,
@@ -123,6 +148,25 @@ void InitializeBindingProtocol() {
 		IsServiceBindingInstalled = true;
 	}
 	
+	status = uefi_call_wrapper(ServiceBinding->CreateChild, 2, ServiceBinding, (EFI_HANDLE*)&TCP4Handle);
+	
+	if (status != EFI_SUCCESS) {
+		uefi_call_wrapper(BS->CloseProtocol, 4, handles[i], &Tcp4Protocol,
+		      ImageHandle, handles[i]);
+		return;
+	}
+	
+	status = uefi_call_wrapper(BS->OpenProtocol, 6, TCP4Handle,
+			      &Tcp4Protocol, (void **)&TCP4,
+			      ImageHandle, ServiceBinding,
+			      EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+    if (status != EFI_SUCCESS) {
+    	uefi_call_wrapper(ServiceBinding->DestroyChild, 2, ServiceBinding, TCP4Handle);
+    	return;
+	}
+	
+	
+	/*
 	EFI_HANDLE	*HandleBuffer;
 	UINTN       NumHandles;
 	
@@ -147,11 +191,11 @@ void InitializeBindingProtocol() {
 	
 	if (EFI_ERROR(status)) {
 		Print(L"\r\nError in opening binding protocol: %d\r\n", status);
-	}
+	}*/
 }
 
 extern "C"
-void FreeBindingProtocol() {
+void FreeBindingProtocol(EFI_HANDLE ImageHandle) {
 	EFI_STATUS status = 0;
 	
 	/*
@@ -166,14 +210,22 @@ void FreeBindingProtocol() {
 	}
 	*/
 	
-	if (IsServiceBindingInstalled) {
-		status = uefi_call_wrapper(BS->UninstallMultipleProtocolInterfaces , 4, &ServiceBindingHandle,
-			&Tcp4ServiceBindingProtocol, &ServiceBinding,
-			NULL);
+	uefi_call_wrapper(BS->CloseProtocol, 4, TCP4Handle, &Tcp4Protocol,
+		      ImageHandle, TCP4Handle);
+	
+	uefi_call_wrapper(ServiceBinding->DestroyChild, 2, ServiceBinding, TCP4Handle);
 
-		if (EFI_ERROR(status)) {
-			Print(L"\r\nError uninstalling binding protocol: %d\r\n", status);
-		}
+	uefi_call_wrapper(BS->CloseProtocol, 4, ServiceBindingHandle, &Tcp4ServiceBindingProtocol,
+		      ImageHandle, ServiceBindingHandle);
+	
+	if (IsServiceBindingInstalled) {
+		//status = uefi_call_wrapper(BS->UninstallMultipleProtocolInterfaces , 4, &ServiceBindingHandle,
+		//	&Tcp4ServiceBindingProtocol, &ServiceBinding,
+		//	NULL);
+
+		//if (EFI_ERROR(status)) {
+		//	Print(L"\r\nError uninstalling binding protocol: %d\r\n", status);
+		//}
 	}
 	
 	ServiceBinding = NULL;
