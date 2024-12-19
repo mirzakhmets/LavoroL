@@ -7,8 +7,8 @@ const int WriterBufferSize = 128;
 
 class LWriter {
 protected:
-	int current = 0;
-	unsigned char buffer[WriterBufferSize];
+	unsigned long current = 0;
+	unsigned char buffer[WriterBufferSize + 1];
 	
 	virtual void WriteBuffer() {
 	}

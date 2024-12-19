@@ -93,21 +93,23 @@ public:
 	
 	LSocket(EFI_IPv4_ADDRESS *_Address, UINT16 _Port) : Port (_Port), Reader(this), Writer(this) {
 		CopyMem(&this->Address, _Address, sizeof (this->Address));
+		
+		this->Initialize();
 	}
 	
 	~LSocket() {
+		/*
 		EFI_STATUS status =  uefi_call_wrapper(BS->CloseProtocol, 4,
 	                this->Handle,
 	                &Tcp4Protocol,
 	                gImageHandle,
 	                NULL);
+	    */
+	    
+	    this->DestroyChild();
 	}
 	
-	bool CreateChild() {
-		if (!ServiceBinding) {
-			return false;
-		}
-		
+	void Initialize() {
 		EFI_STATUS status = uefi_call_wrapper(ServiceBinding->CreateChild, 2, ServiceBinding, &Handle);
 
 		if (EFI_ERROR(status)) {
@@ -122,12 +124,53 @@ public:
 	                   NULL,
 	                   EFI_OPEN_PROTOCOL_GET_PROTOCOL
 	                   );
+		
+		if (EFI_ERROR(status)) {
+			Print(L"\r\nError in opening protocol: %d\r\n", status);
+		}
+	}
 	
+	LSocket* CreateChild() {
+		EFI_TCP4 *ChildTCP4 = NULL;
+		
+		EFI_HANDLE ChildHandle = NULL;		
+		
+		EFI_STATUS status = uefi_call_wrapper(ServiceBinding->CreateChild, 2, ServiceBinding, &ChildHandle);
+
+		if (EFI_ERROR(status)) {
+			Print(L"\r\nError in creating child: %d\r\n", status);
+		}
+		
+		status = uefi_call_wrapper(BS->OpenProtocol, 6,
+	                   ChildHandle,
+	                   &Tcp4Protocol,
+	                   (VOID **)&ChildTCP4,
+	                   gImageHandle,
+	                   NULL,
+	                   EFI_OPEN_PROTOCOL_GET_PROTOCOL
+	                   );
+		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in opening protocol: %d\r\n", status);
 		}
 		
-		return true;
+		return new LSocket(ChildTCP4, ChildHandle);
+	}
+	
+	void DestroyChild() {
+		if (!ServiceBinding || !Child || !Handle) {
+			return;
+		}
+		
+		EFI_STATUS status = uefi_call_wrapper(ServiceBinding->DestroyChild, 2, ServiceBinding, Handle);
+
+		if (EFI_ERROR(status)) {
+			Print(L"\r\nError in creating child: %d\r\n", status);
+		}
+		
+		Child = NULL;
+		
+		Handle = NULL;
 	}
 	
 	bool Connect(EFI_IPv4_ADDRESS *gRemoteAddress, EFI_IPv4_ADDRESS *gSubnetMask, UINT16 gRemotePort) {
@@ -359,21 +402,17 @@ bool LSocketReader::ReadBuffer() {
 		UINTN BufferSize = sizeof (this->buffer);
 		
 		if (Socket->AllReceived) {
-			return false;
+			this->size = ~0U;
+		} else if (!Socket->Receive(this->buffer, &BufferSize)) {
+			this->size = ~0U;
+		} else {					
+			this->current = 0;
+			
+			this->size = BufferSize;
 		}
-		
-		if (!Socket->Receive(this->buffer, &BufferSize)) {
-			return false;
-		}
-		
-		this->current = 0;
-		
-		this->size = BufferSize;
-
-		return this->current != this->size;
 	}
 	
-	return false;
+	return this->size != ~0U;
 }
 
 void LSocketWriter::WriteBuffer() {

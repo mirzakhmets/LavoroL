@@ -57,7 +57,7 @@ void InitializeNetworkProtocol() {
 	}
 	
 	if (!SimpleNetworkProtocolInterface) {
-		status = uefi_call_wrapper(BS->InstallMultipleProtocolInterfaces, 4, &SimpleNetworkProtocolHandle,
+		EFI_STATUS status = uefi_call_wrapper(BS->InstallMultipleProtocolInterfaces, 4, &SimpleNetworkProtocolHandle,
 			&gEfiSimpleNetworkProtocolGuid, &SimpleNetworkProtocolInterface,
 			NULL);
 
@@ -85,6 +85,9 @@ void FreeNetworkProtocol() {
 			Print(L"\r\nError uninstalling simple protocol: %d\r\n", status);
 		}
 	}
+	
+	SimpleNetworkProtocolHandle = NULL;
+	SimpleNetworkProtocolInterface = NULL;
 }
 
 extern "C" EFI_HANDLE ServiceBindingHandle = NULL;
@@ -101,9 +104,12 @@ void InitializeBindingProtocol() {
 		Print(L"\r\nError in locating protocol: %d\r\n", status);
 	}
 	
-	if (SimpleNetworkProtocolHandle) {
-		ServiceBindingHandle = SimpleNetworkProtocolHandle;
-	}
+	//if (SimpleNetworkProtocolHandle) {
+	//	ServiceBindingHandle = SimpleNetworkProtocolHandle;
+	//}
+	
+	//ServiceBindingHandle = NULL;
+	//ServiceBindingHandle = SimpleNetworkProtocolHandle;
 	
 	if (!ServiceBinding) {
 		status = uefi_call_wrapper(BS->InstallMultipleProtocolInterfaces, 4, &ServiceBindingHandle,
@@ -148,6 +154,18 @@ extern "C"
 void FreeBindingProtocol() {
 	EFI_STATUS status = 0;
 	
+	/*
+	status =  uefi_call_wrapper(BS->CloseProtocol, 4,
+                ServiceBindingHandle,
+                &Tcp4ServiceBindingProtocol,
+                gImageHandle,
+                NULL);
+	
+	if (EFI_ERROR(status)) {
+		Print(L"\r\nError closing binding protocol: %d\r\n", status);
+	}
+	*/
+	
 	if (IsServiceBindingInstalled) {
 		status = uefi_call_wrapper(BS->UninstallMultipleProtocolInterfaces , 4, &ServiceBindingHandle,
 			&Tcp4ServiceBindingProtocol, &ServiceBinding,
@@ -158,15 +176,9 @@ void FreeBindingProtocol() {
 		}
 	}
 	
-	status =  uefi_call_wrapper(BS->CloseProtocol, 4,
-                ServiceBindingHandle,
-                &Tcp4ServiceBindingProtocol,
-                gImageHandle,
-                NULL);
-	
-	if (EFI_ERROR(status)) {
-		Print(L"\r\nError closing binding protocol: %d\r\n", status);
-	}
+	ServiceBinding = NULL;
+	ServiceBindingHandle = NULL;
+	IsServiceBindingInstalled = false;
 }
 
 EFI_TCP4_LISTEN_TOKEN TCPConnectionAcceptToken;
