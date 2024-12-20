@@ -5,7 +5,7 @@
 
 const int ReaderEof = -1;
 
-const int BufferSize = 12;
+const int BufferSize = 16;
 
 class LReader {
 protected:
@@ -15,7 +15,7 @@ protected:
 	unsigned char buffer[BufferSize + 1];
 	
 	virtual bool ReadBuffer() {
-		return false;
+		return true;
 	}
 public:
 	LReader() {
@@ -25,20 +25,6 @@ public:
 	}
 	
 	bool AtEnd() {
-		if (size == ~0U) {
-			return true;
-		}
-		
-		if (current == size) {
-			if (!this->ReadBuffer()) {
-				size = ~0U;
-			} else if (size) {
-				current = 0;
-			} else {
-				size = ~0U;
-			}
-		}
-		
 		return size == ~0U;
 	}
 	
@@ -57,6 +43,12 @@ public:
 		
 		if (this->current != this->size) {
 			this->current++;
+		} else if (!this->ReadBuffer()) {
+			this->size = ~0U;
+			
+			return ReaderEof;
+		} else {
+			this->current = 0;
 		}
 		
 		return this->Current();

@@ -247,7 +247,7 @@ public:
 		*/
 	}
 	
-	bool Connect(EFI_IPv4_ADDRESS *gRemoteAddress, EFI_IPv4_ADDRESS *gSubnetMask, UINT16 gRemotePort) {
+	bool Connect(EFI_IPv4_ADDRESS *gRemoteAddress, UINT16 gRemotePort) {
 		if (Child == NULL) {
 			return false;
 		}
@@ -267,8 +267,6 @@ public:
 		      		0, 0, 0, 0
 				  }
 			  },
-		      //{ {Address.Addr[0], Address.Addr[1], Address.Addr[2], Address.Addr[3]} },                             // IP Address  (ignored - use default)
-		      //{ {gSubnetMask->Addr[0], gSubnetMask->Addr[1], gSubnetMask->Addr[2], gSubnetMask->Addr[3]} },                             // Subnet mask (ignored - use default)
 		      this->Port,                             				// Station port
 		      { {gRemoteAddress->Addr[0], gRemoteAddress->Addr[1], gRemoteAddress->Addr[2], gRemoteAddress->Addr[3]} },                             // Remote address: accept any
 		      gRemotePort,                                            // Remote Port: accept any
@@ -280,10 +278,7 @@ public:
 		EFI_STATUS status = 0;
 		
 		EFI_IP4_MODE_DATA               Ip4ModeData;
-
-		status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
 		
-		/*
 		do {
 	      status = uefi_call_wrapper(Child->GetModeData, 6,
 		  	Child,
@@ -291,15 +286,22 @@ public:
 	        &Ip4ModeData,
 	        NULL, NULL
 	    	);
-	    	
+	    
+	    	if (EFI_ERROR(status) && status != EFI_NO_MAPPING) {
+	    		return false;
+			}
+	    
 	    	DoEvents();
+	    	
+	    	break;
 	    } while (!Ip4ModeData.IsConfigured);
 
 		status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
-		*/
 		
-		if (EFI_ERROR (status)) {
+		if (status == EFI_ACCESS_DENIED) {
 			Print (L"\r\nTCP Configure (2): %d\r\n", status);
+
+			return false;
 		}
 		
 		EFI_TCP4_CONNECTION_TOKEN token;
@@ -309,6 +311,8 @@ public:
 		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in creating event: %d\r\n", status);
+		
+			return false;
 		}
 		
 		TCPCompletionTokenEventStart();
@@ -317,6 +321,10 @@ public:
 		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in connecting: %d\r\n", status);
+			
+			uefi_call_wrapper(BS->CloseEvent, 1, token.CompletionToken.Event);
+			
+			return false;
 		}
 		
 		while (TCPCompletionTokenEventRunning()) {
@@ -324,6 +332,10 @@ public:
 			
 			if (EFI_ERROR(status)) {
 				Print(L"\r\nError in polling: %d\r\n", status);
+				
+				uefi_call_wrapper(BS->CloseEvent, 1, token.CompletionToken.Event);
+				
+				return false;
 			}
 			
 			DoEvents();
@@ -333,6 +345,8 @@ public:
 	
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in closing event: %d\r\n", status);
+			
+			return false;
 		}
 		
 		return true;
@@ -363,6 +377,8 @@ public:
 		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in creating event: %d\r\n", status);
+			
+			return false;
 		}
 		
 		TCPCompletionTokenEventStart();
@@ -371,6 +387,10 @@ public:
 		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError transmitting data: %d\r\n", status);
+			
+			uefi_call_wrapper(BS->CloseEvent, 1, iotoken.CompletionToken.Event);
+			
+			return false;
 		}
 		
 		while (TCPCompletionTokenEventRunning()) {
@@ -378,6 +398,10 @@ public:
 			
 			if (EFI_ERROR(status)) {
 				Print(L"\r\nError in polling: %d\r\n", status);
+				
+				uefi_call_wrapper(BS->CloseEvent, 1, iotoken.CompletionToken.Event);
+				
+				return false;
 			}
 			
 			DoEvents();
@@ -387,6 +411,8 @@ public:
 		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in closing event: %d\r\n", status);
+			
+			return false;
 		}
 		
 		return true;
@@ -406,9 +432,11 @@ public:
     	
     	EFI_STATUS status = uefi_call_wrapper(BS->CreateEvent, 5, EVT_NOTIFY_SIGNAL,
 			TPL_CALLBACK, (EFI_EVENT_NOTIFY) TCPCompletionTokenEvent, &iotoken.CompletionToken, &iotoken.CompletionToken.Event);
-			
+		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in creating event: %d\r\n", status);
+			
+			return false;
 		}
 		
 		iotoken.Packet.RxData = &rxdata;
@@ -424,8 +452,18 @@ public:
     	
     	if (status == EFI_CONNECTION_FIN) {
     		this->AllReceived = true;
+    		
+    		uefi_call_wrapper(BS->CloseEvent, 1, iotoken.CompletionToken.Event);
+    		
+    		*databufLength = frag->FragmentLength;
+    		
+    		return *databufLength;
 		} else if (EFI_ERROR(status)) {
 			Print(L"\r\nError in receiving: %d\r\n", status);
+			
+			uefi_call_wrapper(BS->CloseEvent, 1, iotoken.CompletionToken.Event);
+			
+			return false;
 		}
 		
 		while (TCPCompletionTokenEventRunning()) {
@@ -433,13 +471,21 @@ public:
 			
 			if (EFI_ERROR(status)) {
 				Print(L"\r\nError in polling: %d\r\n", status);
+				
+				uefi_call_wrapper(BS->CloseEvent, 1, iotoken.CompletionToken.Event);
+				
+				return false;
 			}
 			
 			DoEvents();
 		}
-		
+
 		if (EFI_ERROR(iotoken.CompletionToken.Status)) {
 			*databufLength = 0;
+			
+			uefi_call_wrapper(BS->CloseEvent, 1, iotoken.CompletionToken.Event);
+			
+			return false;
 		} else {
 			*databufLength = frag->FragmentLength;
 		}
@@ -448,6 +494,8 @@ public:
 		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in closing event (3): %d\r\n", status);
+			
+			return false;
 		}
 		
 		return *databufLength;
@@ -471,21 +519,23 @@ public:
 };
 
 bool LSocketReader::ReadBuffer() {
-	if (Socket) {
+	if (Socket && !this->AtEnd()) {
 		UINTN BufferSize = sizeof (this->buffer);
 		
-		if (Socket->AllReceived) {
+		if (!Socket->Receive(this->buffer, &BufferSize)) {
 			this->size = ~0U;
-		} else if (!Socket->Receive(this->buffer, &BufferSize)) {
-			this->size = ~0U;
-		} else {					
+			
+			return false;
+		} else {
 			this->current = 0;
 			
 			this->size = BufferSize;
 		}
+		
+		return this->current != this->size;
 	}
 	
-	return this->size != ~0U;
+	return false;
 }
 
 void LSocketWriter::WriteBuffer() {

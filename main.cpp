@@ -65,9 +65,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 	TCPConnectionAcceptInitialize();
 	
-	EFI_IPv4_ADDRESS Addresses[4] = {
-		{217, 69, 139, 200},
-		{5, 61, 23, 11},
+	EFI_IPv4_ADDRESS Addresses[2] = {
 		{90, 156, 201, 79},
 		{81, 19, 72, 34}
 	};
@@ -127,13 +125,15 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 			LFile file(szPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 			
-			Print (L"\r\n");
-			
 			CHAR16 szBuffer[130];
 			UINTN lBuffer = 0;
 			
 			while (!file.Reader.AtEnd()) {
-				szBuffer[lBuffer++] = file.Reader.Next();
+				file.Reader.Next();
+				
+				if (!file.Reader.AtEnd()) {
+					szBuffer[lBuffer++] = file.Reader.Current();
+				}
 				
 				if (lBuffer == 128) {
 					szBuffer[lBuffer] = L'\0';
@@ -158,49 +158,32 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	
 			LSocket Socket(TCP4, TCP4Handle, &gLocalAddress, 120);
 	
-			//LSocket* socket = Socket.CreateChild();
+			EFI_IPv4_ADDRESS gRemoteAddress;
 			
-			EFI_IPv4_ADDRESS gSubnetMask = { 255, 255, 255, 252 };
-			EFI_IPv4_ADDRESS gRemoteAddress = { 5, 61, 23, 11 };
-			
-			CopyMem(&gRemoteAddress, Addresses + ((CurrentAddress++) % 4), sizeof (gRemoteAddress));
+			CopyMem(&gRemoteAddress, Addresses + ((CurrentAddress++) % 2), sizeof (gRemoteAddress));
 			
 			UINTN lBuffer = 0;
-			CHAR8 sBuffer[10280];
-			CHAR16 szBuffer[10280];
-
-			Socket.Connect(&gRemoteAddress, &gSubnetMask, 80);
+			CHAR16 szBuffer[130];
 			
-			//Socket.Writer.Write("GET / HTTP/1.0\r\n\r\n", 20);
+			if (Socket.Connect(&gRemoteAddress, 80)) {
+				Socket.Writer.Write("GET / HTTP/1.0\r\n\r\n", 20);
 			
-			//Socket.Writer.Flush();
-			
-			Socket.Transmit("GET / HTTP/1.0\r\n\r\n", 20);
-			
-			lBuffer = sizeof (sBuffer);
-			
-			Socket.Receive(sBuffer, &lBuffer);
-			
-			for (int i = 0; i < lBuffer; ++i) {
-				szBuffer[i] = sBuffer[i];
-			}
-			
-			szBuffer[lBuffer] = L'\0';
-			
-			Print (L"%s\r\n", szBuffer);
-			
-			/*
-			while (!Socket.Reader.AtEnd()) {
-				szBuffer[lBuffer++] = Socket.Reader.Current();
+				Socket.Writer.Flush();
 				
-				Socket.Reader.Next();
-				
-				if (lBuffer == 128) {
-					szBuffer[lBuffer] = L'\0';
+				while (!Socket.Reader.AtEnd()) {
+					Socket.Reader.Next();
 					
-					lBuffer = 0;
+					if (!Socket.Reader.AtEnd()) {
+						szBuffer[lBuffer++] = Socket.Reader.Current();
+					}
 					
-					Print(L"%s", szBuffer);
+					if (lBuffer == 128) {
+						szBuffer[lBuffer] = L'\0';
+						
+						lBuffer = 0;
+						
+						Print(L"%s", szBuffer);
+					}
 				}
 			}
 			
@@ -209,11 +192,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 				Print(L"%s\r\n", szBuffer);
 			}
-			*/
 			
 			Print(L"\r\n");
-			
-			//delete socket;
 		}
 	}
 	

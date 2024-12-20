@@ -119,8 +119,8 @@ public:
 };
 
 bool LFileReader::ReadBuffer() {
-	if (File) {
-		UINTN BufferSize = sizeof (this->buffer);
+	if (File && !this->AtEnd()) {
+		UINTN BufferSize = sizeof (this->buffer) - 1;
 		
 		EFI_STATUS status = uefi_call_wrapper(File->Handle->Read, 3, File->Handle, &BufferSize, this->buffer);
 		
