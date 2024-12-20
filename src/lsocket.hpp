@@ -41,15 +41,7 @@ extern "C" void InitializeNetworkProtocol();
 
 extern "C" void FreeNetworkProtocol();
 
-extern "C" void InitializeBindingProtocol();
-
-extern "C" void FreeBindingProtocol();
-
 extern "C" EFI_TCP4_LISTEN_TOKEN TCPConnectionAcceptToken;
-
-extern "C" EFI_TCP4 *TCP4;
-
-extern "C" EFI_HANDLE TCP4Handle;
 
 #define IP4_ADDR_TO_STRING(IpAddr, IpAddrString) UnicodeSPrint (       \
                                                    IpAddrString,       \
@@ -91,160 +83,91 @@ public:
 	}
 };
 
+extern "C" EFI_HANDLE gImageHandle;
+
+extern "C" EFI_GUID Tcp4Protocol;
+
+extern "C" EFI_GUID Tcp4ServiceBindingProtocol;
+
 class LSocket {
-public:
-	UINT16 Port;
+protected:
 	EFI_TCP4 *Child = NULL;
 	EFI_HANDLE Handle = NULL;
+
+	EFI_HANDLE ServiceBindingHandle = NULL;
+	EFI_SERVICE_BINDING *ServiceBinding = NULL;
+	
+	bool Closed = false;
+public:
+	UINT16 Port;
 	EFI_IPv4_ADDRESS Address;
-	bool AllReceived = false;
 	
 	LSocketReader Reader;
 	LSocketWriter Writer;
 	
-	LSocket (EFI_TCP4 *_Child, EFI_HANDLE _Handle, EFI_IPv4_ADDRESS *_Address, UINT16 _Port) : Child(_Child), Handle(_Handle), Reader(this), Writer(this), Port (_Port) {
-		CopyMem(&this->Address, _Address, sizeof (this->Address));
-	}
-	
-	LSocket(EFI_IPv4_ADDRESS *_Address, UINT16 _Port) : Port (_Port), Reader(this), Writer(this) {
+	LSocket (EFI_IPv4_ADDRESS *_Address, UINT16 _Port) : Reader(this), Writer(this), Port (_Port) {
 		CopyMem(&this->Address, _Address, sizeof (this->Address));
 		
-		//this->Initialize();
-	}
-	
-	~LSocket() {
-		/*
-		EFI_STATUS status =  uefi_call_wrapper(BS->CloseProtocol, 4,
-	                this->Handle,
-	                &Tcp4Protocol,
-	                gImageHandle,
-	                NULL);
-	    */
-	    
-	    //this->DestroyChild();
-	    
-	    FreeBindingProtocol();
-	}
-	
-	void Initialize() {
-		/*
-		EFI_STATUS status = uefi_call_wrapper(ServiceBinding->CreateChild, 2, ServiceBinding, &Handle);
-
-		if (EFI_ERROR(status)) {
-			Print(L"\r\nError in creating child: %d\r\n", status);
-		}
+		EFI_HANDLE protocol, child, *handles = NULL;
+		UINTN i, nr_handles = 0;
+		EFI_STATUS status = LibLocateHandle(ByProtocol, &Tcp4ServiceBindingProtocol, NULL, &nr_handles, &handles);
 		
-		status = uefi_call_wrapper(BS->OpenProtocol, 6,
-	                   Handle,
-	                   &Tcp4Protocol,
-	                   (VOID **)&Child,
-	                   gImageHandle,
-	                   NULL,
-	                   EFI_OPEN_PROTOCOL_GET_PROTOCOL
-	                   );
-		
-		if (EFI_ERROR(status)) {
-			Print(L"\r\nError in opening protocol: %d\r\n", status);
-		}
-		
-		EFI_TCP4_CONFIG_DATA TcpConfigData = {
-		    0x00,                                           // IPv4 Type of Service
-		    255,                                            // IPv4 Time to Live
-		    {                                               // AccessPoint:
-		      TRUE,                                         // Use default address
-		      { {Address.Addr[0], Address.Addr[1], Address.Addr[2], Address.Addr[3]} },
-		      //{ {0, 0, 0, 0} },                             // IP Address  (ignored - use default)
-		      //{ {0, 0, 0, 0} },                             // Subnet mask (ignored - use default)
-		      { {255, 255, 255, 0} },                             // Subnet mask (ignored - use default)
-		      80,                             				// Station port
-		      { {0, 0, 0, 0} },                             // Remote address: accept any
-		      0,                                            // Remote Port: accept any
-		      FALSE                                         // ActiveFlag: be a "server"
-		    },
-		    NULL                                            // Default advanced TCP options
-		  };
-		
-		EFI_IP4_MODE_DATA               Ip4ModeData;
-		
-		status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
-		
-		if (status == EFI_NO_MAPPING) {
-			do {
-		      status = uefi_call_wrapper(Child->GetModeData, 6,
-			  	Child,
-		        NULL, NULL,
-		        &Ip4ModeData,
-		        NULL, NULL
-		    	);
-		    } while (!Ip4ModeData.IsConfigured);
+		for (i = 0; i < nr_handles; i++) {
+			status = uefi_call_wrapper(BS->OpenProtocol, 6, handles[i],
+						   &Tcp4ServiceBindingProtocol, (void **)&ServiceBinding,
+						   gImageHandle, handles[i],
+						   EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 			
-		    status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
-		} else if (EFI_ERROR (status)) {
-		    Print (L"\r\nTCP Configure: %d\r\n", status);
+			if (status == EFI_SUCCESS) {
+				ServiceBindingHandle = handles[i];
+				break;
+			}
+			
+			uefi_call_wrapper(BS->CloseProtocol, 4, handles[i], &Tcp4ServiceBindingProtocol,
+				  gImageHandle, handles[i]);
+	    }
+		
+		if (!ServiceBinding) {
+			status = uefi_call_wrapper(BS->InstallMultipleProtocolInterfaces, 4, &ServiceBindingHandle,
+				&Tcp4ServiceBindingProtocol, &ServiceBinding,
+				NULL);
+	
+			if (EFI_ERROR(status)) {
+				Print(L"\r\nError in installing binding protocol: %d\r\n", status);
+			}
+		}
+	
+		status = uefi_call_wrapper(ServiceBinding->CreateChild, 2, ServiceBinding, (EFI_HANDLE*)&Handle);
+	
+		if (status != EFI_SUCCESS) {
+			uefi_call_wrapper(BS->CloseProtocol, 4, handles[i], &Tcp4Protocol,
+			      gImageHandle, handles[i]);
+			
+			goto END_MARK;
+		}
+	
+		status = uefi_call_wrapper(BS->OpenProtocol, 6, Handle,
+				      &Tcp4Protocol, (void **)&Child,
+				      gImageHandle, ServiceBinding,
+				      EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+
+	    if (status != EFI_SUCCESS) {
+	    	uefi_call_wrapper(ServiceBinding->DestroyChild, 2, ServiceBinding, Handle);
+	    	
+	    	goto END_MARK;
 		}
 		
-		CHAR16                          IpAddrString[16];
-		
-		IP4_ADDR_TO_STRING (Ip4ModeData.ConfigData.StationAddress, IpAddrString);
-		
-		Print( L"TCP transport configured.\r\n");
-		Print (L"IP address: ");
-		Print (L"%s\r\n", IpAddrString);
-		Print (L"\r\n");
-		*/
+		END_MARK:
 	}
 	
-	LSocket* CreateChild() {
-		/*
-		EFI_TCP4 *ChildTCP4 = NULL;
-		
-		EFI_HANDLE ChildHandle = NULL;		
-		
-		EFI_STATUS status = uefi_call_wrapper(ServiceBinding->CreateChild, 2, ServiceBinding, &ChildHandle);
-
-		if (EFI_ERROR(status)) {
-			Print(L"\r\nError in creating child: %d\r\n", status);
-		}
-		
-		status = uefi_call_wrapper(BS->OpenProtocol, 6,
-	                   ChildHandle,
-	                   &Tcp4Protocol,
-	                   (VOID **)&ChildTCP4,
-	                   gImageHandle,
-	                   NULL,
-	                   EFI_OPEN_PROTOCOL_GET_PROTOCOL
-	                   );
-		
-		if (EFI_ERROR(status)) {
-			Print(L"\r\nError in opening protocol: %d\r\n", status);
-		}
-		
-		LSocket *Socket = new LSocket(ChildTCP4, ChildHandle);
-		
-		Socket->Port = this->Port;
-		
-		CopyMem (&Socket->Address, &this->Address, sizeof (this->Address));
-		
-		return Socket;
-		*/
-	}
+	virtual ~LSocket() {
+		uefi_call_wrapper(BS->CloseProtocol, 4, Handle, &Tcp4Protocol,
+		      gImageHandle, Handle);
 	
-	void DestroyChild() {
-		/*
-		if (!ServiceBinding || !Child || !Handle) {
-			return;
-		}
-		
-		EFI_STATUS status = uefi_call_wrapper(ServiceBinding->DestroyChild, 2, ServiceBinding, Handle);
-
-		if (EFI_ERROR(status)) {
-			Print(L"\r\nError in creating child: %d\r\n", status);
-		}
-		
-		Child = NULL;
-		
-		Handle = NULL;
-		*/
+		uefi_call_wrapper(ServiceBinding->DestroyChild, 2, ServiceBinding, Handle);
+	
+		uefi_call_wrapper(BS->CloseProtocol, 4, ServiceBindingHandle, &Tcp4ServiceBindingProtocol,
+			gImageHandle, ServiceBindingHandle);
 	}
 	
 	bool Connect(EFI_IPv4_ADDRESS *gRemoteAddress, UINT16 gRemotePort) {
@@ -419,7 +342,7 @@ public:
 	}
 	
 	bool Receive(CHAR8* databuf, UINTN *databufLength) {
-		if (Child == NULL || this->AllReceived) {
+		if (Child == NULL || this->Closed) {
 			return false;
 		}
 		
@@ -451,11 +374,11 @@ public:
     	status = uefi_call_wrapper(this->Child->Receive, 2, this->Child, &iotoken);
     	
     	if (status == EFI_CONNECTION_FIN) {
-    		this->AllReceived = true;
-    		
     		uefi_call_wrapper(BS->CloseEvent, 1, iotoken.CompletionToken.Event);
     		
     		*databufLength = frag->FragmentLength;
+    		
+    		this->Closed = true;
     		
     		return *databufLength;
 		} else if (EFI_ERROR(status)) {
@@ -520,7 +443,7 @@ public:
 
 bool LSocketReader::ReadBuffer() {
 	if (Socket && !this->AtEnd()) {
-		UINTN BufferSize = sizeof (this->buffer);
+		UINTN BufferSize = sizeof (this->buffer) - 1;
 		
 		if (!Socket->Receive(this->buffer, &BufferSize)) {
 			this->size = ~0U;

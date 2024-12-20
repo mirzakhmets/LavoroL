@@ -43,9 +43,7 @@ extern "C" int Pyramids_Main();
 extern "C" int AntTSP_Main();
 
 extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
-	if (Child) {
-		//LSocket socket (Child, Handle);
-	}
+	
 }
 
 extern "C"
@@ -61,16 +59,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	
 	InitializeFileSystem();
 	
-	//InitializeNetworkProtocol();
-			
 	TCPConnectionAcceptInitialize();
-	
-	EFI_IPv4_ADDRESS Addresses[2] = {
-		{90, 156, 201, 79},
-		{81, 19, 72, 34}
-	};
-	
-	int CurrentAddress = 0;
 	
 	while (1) {
 		CHAR16 szLine[MAX_PATH];
@@ -151,21 +140,45 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			}
 			
 			Print (L"\r\n");
-		} else if (!StrCmp(szLine, L"connect")) {
-			InitializeBindingProtocol();
-	
-			EFI_IPv4_ADDRESS gLocalAddress = { 192, 168, 0, 14 };
-	
-			LSocket Socket(TCP4, TCP4Handle, &gLocalAddress, 120);
-	
-			EFI_IPv4_ADDRESS gRemoteAddress;
+		} else if (!StrnCmp(szLine, L"connect", 7)) {
+			UINTN RemotePort = 80;
 			
-			CopyMem(&gRemoteAddress, Addresses + ((CurrentAddress++) % 2), sizeof (gRemoteAddress));
+			EFI_IPv4_ADDRESS RemoteAddress;
 			
-			UINTN lBuffer = 0;
+			EFI_IPv4_ADDRESS LocalAddress = { 192, 168, 0, 14 };
+			
+			LSocket Socket(&LocalAddress, 160);
+			
+			CHAR16 *p = szLine + 8;
+			
+			for (int i = 0; i < 4; ++i, ++p) {
+				int current = 0;
+				
+				while (*p >= L'0' && *p <= L'9') {
+					current = current * 10 + (*p - L'0');
+					
+					++p;
+				}
+				
+				RemoteAddress.Addr[i] = current;
+			}
+			
+			if (*p && *p >= L'0' && *p <= L'9') {
+				int current = 0;
+				
+				while (*p >= L'0' && *p <= L'9') {
+					current = current * 10 + (*p - L'0');
+					
+					++p;
+				}
+				
+				RemotePort = current;
+			}
+			
 			CHAR16 szBuffer[130];
+			UINTN lBuffer = 0;
 			
-			if (Socket.Connect(&gRemoteAddress, 80)) {
+			if (Socket.Connect(&RemoteAddress, RemotePort)) {
 				Socket.Writer.Write("GET / HTTP/1.0\r\n\r\n", 20);
 			
 				Socket.Writer.Flush();
@@ -196,10 +209,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			Print(L"\r\n");
 		}
 	}
-	
-	//FreeBindingProtocol();
-	
-	//FreeNetworkProtocol();
 			
 	return EFI_SUCCESS;
 }

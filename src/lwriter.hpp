@@ -3,12 +3,12 @@
 
 #define _L_WRITER_
 
-const int WriterBufferSize = 16;
+const int WriterBufferSize = 256;
 
 class LWriter {
 protected:
 	unsigned long current = 0;
-	unsigned char buffer[WriterBufferSize + 1];
+	unsigned char buffer[WriterBufferSize];
 	
 	virtual void WriteBuffer() {
 	}

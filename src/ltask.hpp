@@ -23,7 +23,7 @@ public:
 	LTask(UINT16 _Priority) : Priority (_Priority) {
 	}
 	
-	~LTask() {
+	virtual ~LTask() {
 	}
 	
 	bool IsRunning() {
