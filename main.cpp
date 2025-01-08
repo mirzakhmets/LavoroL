@@ -1,6 +1,4 @@
 
-#ifndef _TEST_
-
 #include <efi.h>
 #include <efilib.h>
 #include <lib.h>
@@ -20,9 +18,15 @@ extern "C" void operator delete (void *buffer) {
 	FreePool((VOID*) buffer);
 }
 
+#ifdef _TEST_
+extern "C" void operator delete (void *buffer, unsigned long long size) {
+	FreePool((VOID*) buffer);
+}
+#else
 extern "C" void operator delete (void *buffer, unsigned long size) {
 	FreePool((VOID*) buffer);
 }
+#endif
 
 extern "C" void __cxa_throw_bad_array_new_length() {
 }
@@ -215,16 +219,14 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	return EFI_SUCCESS;
 }
 
-#else
-
+#ifdef _TEST_
 #include <cstdio>
 #include <cstdlib>
 
-#include <windows.h>
-
 using namespace std;
 
-int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
+extern "C"
+int WinMain(int hInst, int hInstPrev, void* cmdline, int cmdshow)
 {
 	printf ("Hello, LavoroL\r\n");
 	

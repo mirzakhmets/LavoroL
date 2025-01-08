@@ -112,9 +112,7 @@ EFIAPI void TCPConnectionAccepted (EFI_EVENT Event, VOID *Context)
 		return;
 	}
 	
-	#ifndef _TEST_
 	TCPAcceptConnection (Child, acceptToken->NewChildHandle);
-	#endif
 }
 
 extern "C"
