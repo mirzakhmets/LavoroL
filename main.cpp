@@ -1,4 +1,6 @@
 
+#ifndef _TEST_
+
 #include <efi.h>
 #include <efilib.h>
 #include <lib.h>
@@ -61,7 +63,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	
 	TCPConnectionAcceptInitialize();
 	
-	while (1) {
+	while (true) {
 		CHAR16 szLine[MAX_PATH];
 		
 		Input(L"\r\n$>> ", szLine, sizeof(szLine) / sizeof(szLine[0]));
@@ -212,3 +214,21 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 	return EFI_SUCCESS;
 }
+
+#else
+
+#include <cstdio>
+#include <cstdlib>
+
+#include <windows.h>
+
+using namespace std;
+
+int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
+{
+	printf ("Hello, LavoroL\r\n");
+	
+	return 0;
+}
+
+#endif

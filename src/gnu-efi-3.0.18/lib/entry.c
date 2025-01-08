@@ -4,6 +4,8 @@
  *
  */
 
+#ifndef _TEST_
+
 #include <efi.h>
 #include <efilib.h>
 
@@ -15,6 +17,7 @@ typedef void (*funcp)(void);
  * end/END definitions, and the fact that they're mergeable, they can also
  * have NULLs which aren't guaranteed to be at the end.
  */
+
 extern funcp __init_array_start[], __init_array_end[];
 extern funcp __CTOR_LIST__[], __CTOR_END__[];
 extern funcp __fini_array_start[], __fini_array_end[];
@@ -71,3 +74,5 @@ extern "C" EFI_STATUS _entry(EFI_HANDLE image, EFI_SYSTEM_TABLE *systab)
 }
 
 // vim:fenc=utf-8:tw=75:noet
+
+#endif

@@ -4,15 +4,15 @@
 CPP      = g++.exe
 CC       = gcc.exe
 WINDRES  = windres.exe
-OBJ      = main.o src/gnu-efi-3.0.18/gnuefi/reloc_x86_64.o src/gnu-efi-3.0.18/lib/x86_64/callwrap.o src/gnu-efi-3.0.18/lib/x86_64/initplat.o src/gnu-efi-3.0.18/lib/x86_64/math.o src/gnu-efi-3.0.18/lib/boxdraw.o src/gnu-efi-3.0.18/lib/cmdline.o src/gnu-efi-3.0.18/lib/console.o src/gnu-efi-3.0.18/lib/crc.o src/gnu-efi-3.0.18/lib/data.o src/gnu-efi-3.0.18/lib/debug.o src/gnu-efi-3.0.18/lib/dpath.o src/gnu-efi-3.0.18/lib/entry.o src/gnu-efi-3.0.18/lib/error.o src/gnu-efi-3.0.18/lib/event.o src/gnu-efi-3.0.18/lib/exit.o src/gnu-efi-3.0.18/lib/guid.o src/gnu-efi-3.0.18/lib/hand.o src/gnu-efi-3.0.18/lib/hw.o src/gnu-efi-3.0.18/lib/init.o src/gnu-efi-3.0.18/lib/lock.o src/gnu-efi-3.0.18/lib/misc.o src/gnu-efi-3.0.18/lib/pause.o src/gnu-efi-3.0.18/lib/print.o src/gnu-efi-3.0.18/lib/smbios.o src/gnu-efi-3.0.18/lib/sread.o src/gnu-efi-3.0.18/lib/str.o src/gnu-efi-3.0.18/lib/runtime/efirtlib.o src/gnu-efi-3.0.18/lib/runtime/rtdata.o src/gnu-efi-3.0.18/lib/runtime/rtlock.o src/gnu-efi-3.0.18/lib/runtime/rtstr.o src/gnu-efi-3.0.18/lib/runtime/vm.o
-LINKOBJ  = main.o src/gnu-efi-3.0.18/gnuefi/reloc_x86_64.o src/gnu-efi-3.0.18/lib/x86_64/callwrap.o src/gnu-efi-3.0.18/lib/x86_64/initplat.o src/gnu-efi-3.0.18/lib/x86_64/math.o src/gnu-efi-3.0.18/lib/boxdraw.o src/gnu-efi-3.0.18/lib/cmdline.o src/gnu-efi-3.0.18/lib/console.o src/gnu-efi-3.0.18/lib/crc.o src/gnu-efi-3.0.18/lib/data.o src/gnu-efi-3.0.18/lib/debug.o src/gnu-efi-3.0.18/lib/dpath.o src/gnu-efi-3.0.18/lib/entry.o src/gnu-efi-3.0.18/lib/error.o src/gnu-efi-3.0.18/lib/event.o src/gnu-efi-3.0.18/lib/exit.o src/gnu-efi-3.0.18/lib/guid.o src/gnu-efi-3.0.18/lib/hand.o src/gnu-efi-3.0.18/lib/hw.o src/gnu-efi-3.0.18/lib/init.o src/gnu-efi-3.0.18/lib/lock.o src/gnu-efi-3.0.18/lib/misc.o src/gnu-efi-3.0.18/lib/pause.o src/gnu-efi-3.0.18/lib/print.o src/gnu-efi-3.0.18/lib/smbios.o src/gnu-efi-3.0.18/lib/sread.o src/gnu-efi-3.0.18/lib/str.o src/gnu-efi-3.0.18/lib/runtime/efirtlib.o src/gnu-efi-3.0.18/lib/runtime/rtdata.o src/gnu-efi-3.0.18/lib/runtime/rtlock.o src/gnu-efi-3.0.18/lib/runtime/rtstr.o src/gnu-efi-3.0.18/lib/runtime/vm.o
-LIBS     = -L"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib" -L"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/lib" -static-libgcc -L"C:/Lavoro/src/gnu-efi-3.0.18/gnuefi" -L"C:/Lavoro/src/gnu-efi-3.0.18/lib" -L"C:/Lavoro/src/gnu-efi-3.0.18/lib/x86_64" -fpermissive
-INCS     = -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include" -I"C:/Lavoro/src" -I"C:/Lavoro/src/gnu-efi-3.0.18/inc" -I"C:/Lavoro/src/gnu-efi-3.0.18/inc/x86_64"
-CXXINCS  = -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include/c++" -I"C:/Lavoro/src" -I"C:/Lavoro/src/gnu-efi-3.0.18/inc" -I"C:/Lavoro/src/gnu-efi-3.0.18/inc/x86_64"
+OBJ      = src/gnu-efi-3.0.18/gnuefi/reloc_x86_64.o src/gnu-efi-3.0.18/lib/x86_64/callwrap.o src/gnu-efi-3.0.18/lib/x86_64/initplat.o src/gnu-efi-3.0.18/lib/x86_64/math.o src/gnu-efi-3.0.18/lib/boxdraw.o src/gnu-efi-3.0.18/lib/cmdline.o src/gnu-efi-3.0.18/lib/console.o src/gnu-efi-3.0.18/lib/crc.o src/gnu-efi-3.0.18/lib/data.o src/gnu-efi-3.0.18/lib/debug.o src/gnu-efi-3.0.18/lib/dpath.o src/gnu-efi-3.0.18/lib/entry.o src/gnu-efi-3.0.18/lib/error.o src/gnu-efi-3.0.18/lib/event.o src/gnu-efi-3.0.18/lib/exit.o src/gnu-efi-3.0.18/lib/guid.o src/gnu-efi-3.0.18/lib/hand.o src/gnu-efi-3.0.18/lib/hw.o src/gnu-efi-3.0.18/lib/init.o src/gnu-efi-3.0.18/lib/lock.o src/gnu-efi-3.0.18/lib/misc.o src/gnu-efi-3.0.18/lib/pause.o src/gnu-efi-3.0.18/lib/print.o src/gnu-efi-3.0.18/lib/smbios.o src/gnu-efi-3.0.18/lib/sread.o src/gnu-efi-3.0.18/lib/str.o src/gnu-efi-3.0.18/lib/runtime/efirtlib.o src/gnu-efi-3.0.18/lib/runtime/rtdata.o src/gnu-efi-3.0.18/lib/runtime/rtlock.o src/gnu-efi-3.0.18/lib/runtime/rtstr.o src/gnu-efi-3.0.18/lib/runtime/vm.o main.o src/packages/ACM/Box.o src/packages/ACM/Pyramids.o src/packages/AntTSP/AntTSP.o src/lsocket.o src/ltask.o src/lfs.o
+LINKOBJ  = src/gnu-efi-3.0.18/gnuefi/reloc_x86_64.o src/gnu-efi-3.0.18/lib/x86_64/callwrap.o src/gnu-efi-3.0.18/lib/x86_64/initplat.o src/gnu-efi-3.0.18/lib/x86_64/math.o src/gnu-efi-3.0.18/lib/boxdraw.o src/gnu-efi-3.0.18/lib/cmdline.o src/gnu-efi-3.0.18/lib/console.o src/gnu-efi-3.0.18/lib/crc.o src/gnu-efi-3.0.18/lib/data.o src/gnu-efi-3.0.18/lib/debug.o src/gnu-efi-3.0.18/lib/dpath.o src/gnu-efi-3.0.18/lib/entry.o src/gnu-efi-3.0.18/lib/error.o src/gnu-efi-3.0.18/lib/event.o src/gnu-efi-3.0.18/lib/exit.o src/gnu-efi-3.0.18/lib/guid.o src/gnu-efi-3.0.18/lib/hand.o src/gnu-efi-3.0.18/lib/hw.o src/gnu-efi-3.0.18/lib/init.o src/gnu-efi-3.0.18/lib/lock.o src/gnu-efi-3.0.18/lib/misc.o src/gnu-efi-3.0.18/lib/pause.o src/gnu-efi-3.0.18/lib/print.o src/gnu-efi-3.0.18/lib/smbios.o src/gnu-efi-3.0.18/lib/sread.o src/gnu-efi-3.0.18/lib/str.o src/gnu-efi-3.0.18/lib/runtime/efirtlib.o src/gnu-efi-3.0.18/lib/runtime/rtdata.o src/gnu-efi-3.0.18/lib/runtime/rtlock.o src/gnu-efi-3.0.18/lib/runtime/rtstr.o src/gnu-efi-3.0.18/lib/runtime/vm.o main.o src/packages/ACM/Box.o src/packages/ACM/Pyramids.o src/packages/AntTSP/AntTSP.o src/lsocket.o src/ltask.o src/lfs.o
+LIBS     = -L"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib" -L"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/lib" -static-libgcc -L"C:/Users/mirza/Documents/GitHub/LavoroL/src" -L"C:/Users/mirza/Documents/GitHub/LavoroL/src/gnu-efi-3.0.18" -L"C:/Users/mirza/Documents/GitHub/LavoroL/src/gnu-efi-3.0.18/inc" -L"C:/Users/mirza/Documents/GitHub/LavoroL/src/gnu-efi-3.0.18/lib" -L"C:/Users/mirza/Documents/GitHub/LavoroL/src/gnu-efi-3.0.18/gnuefi" -L"C:/Users/mirza/Documents/GitHub/LavoroL/src/gnu-efi-3.0.18/x86_64" -L"C:/Users/mirza/Documents/GitHub/LavoroL/src/gnu-efi-3.0.18/lib/x86_64"
+INCS     = -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include" -I"C:/Users/mirza/Documents/GitHub/LavoroL" -I"C:/Users/mirza/Documents/GitHub/LavoroL/src" -I"C:/Users/mirza/Documents/GitHub/LavoroL/src/gnu-efi-3.0.18/inc"
+CXXINCS  = -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include/c++" -I"C:/Users/mirza/Documents/GitHub/LavoroL" -I"C:/Users/mirza/Documents/GitHub/LavoroL/src" -I"C:/Users/mirza/Documents/GitHub/LavoroL/src/gnu-efi-3.0.18/inc"
 BIN      = Lavoro.exe
-CXXFLAGS = $(CXXINCS) -fpermissive -fpic -ffreestanding -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -maccumulate-outgoing-args
+CXXFLAGS = $(CXXINCS) -fpic -ffreestanding -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -mno-avx -fPIE -g -O2 -funsigned-char -fno-strict-aliasing -fno-stack-check -fno-merge-all-constants -maccumulate-outgoing-args -DCONFIG_X86_64 -DGNU_EFI_USE_MS_ABI -fpermissive -fno-exceptions -fno-rtti -D_TEST_
 CFLAGS   = $(INCS) 
-DEL      = C:\Program Files (x86)\Embarcadero\Dev-Cpp\devcpp.exe INTERNAL_DEL
+DEL      = C:\Program Files (x86)\Embarcadero\Dev-Cpp\DevCpp.exe INTERNAL_DEL
 
 .PHONY: all all-before all-after clean clean-custom
 
@@ -23,9 +23,6 @@ clean: clean-custom
 
 $(BIN): $(OBJ)
 	$(CPP) $(LINKOBJ) -o $(BIN) $(LIBS)
-
-main.o: main.cpp
-	$(CPP) -c main.cpp -o main.o $(CXXFLAGS)
 
 src/gnu-efi-3.0.18/gnuefi/reloc_x86_64.o: src/gnu-efi-3.0.18/gnuefi/reloc_x86_64.c
 	$(CPP) -c src/gnu-efi-3.0.18/gnuefi/reloc_x86_64.c -o src/gnu-efi-3.0.18/gnuefi/reloc_x86_64.o $(CXXFLAGS)
@@ -119,3 +116,24 @@ src/gnu-efi-3.0.18/lib/runtime/rtstr.o: src/gnu-efi-3.0.18/lib/runtime/rtstr.c
 
 src/gnu-efi-3.0.18/lib/runtime/vm.o: src/gnu-efi-3.0.18/lib/runtime/vm.c
 	$(CPP) -c src/gnu-efi-3.0.18/lib/runtime/vm.c -o src/gnu-efi-3.0.18/lib/runtime/vm.o $(CXXFLAGS)
+
+main.o: main.cpp
+	$(CPP) -c main.cpp -o main.o $(CXXFLAGS)
+
+src/packages/ACM/Box.o: src/packages/ACM/Box.cpp
+	$(CPP) -c src/packages/ACM/Box.cpp -o src/packages/ACM/Box.o $(CXXFLAGS)
+
+src/packages/ACM/Pyramids.o: src/packages/ACM/Pyramids.cpp
+	$(CPP) -c src/packages/ACM/Pyramids.cpp -o src/packages/ACM/Pyramids.o $(CXXFLAGS)
+
+src/packages/AntTSP/AntTSP.o: src/packages/AntTSP/AntTSP.cpp
+	$(CPP) -c src/packages/AntTSP/AntTSP.cpp -o src/packages/AntTSP/AntTSP.o $(CXXFLAGS)
+
+src/lsocket.o: src/lsocket.cpp
+	$(CPP) -c src/lsocket.cpp -o src/lsocket.o $(CXXFLAGS)
+
+src/ltask.o: src/ltask.cpp
+	$(CPP) -c src/ltask.cpp -o src/ltask.o $(CXXFLAGS)
+
+src/lfs.o: src/lfs.cpp
+	$(CPP) -c src/lfs.cpp -o src/lfs.o $(CXXFLAGS)

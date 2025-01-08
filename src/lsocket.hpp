@@ -158,6 +158,7 @@ public:
 		}
 		
 		END_MARK:
+			;
 	}
 	
 	virtual ~LSocket() {
