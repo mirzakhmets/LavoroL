@@ -12,9 +12,9 @@ extern "C" EFI_GUID Tcp4ServiceBindingProtocol;
 
 extern "C" EFI_GUID gEfiSimpleNetworkProtocolGuid;
 
-EFI_HANDLE gImageHandle = NULL;
+extern "C" int TCPEventStatus = 0;
 
-int volatile TCPEventStatus = 0;
+EFI_HANDLE gImageHandle = NULL;
 
 extern "C" void TCPCompletionTokenEventStart() {
 	++TCPEventStatus;
@@ -30,17 +30,10 @@ extern "C" bool TCPCompletionTokenEventRunning() {
 	return TCPEventStatus;
 }
 
-extern "C" 
-EFIAPI void TCPCompletionTokenEvent(EFI_EVENT event, void *context) {
-	EFI_TCP4_COMPLETION_TOKEN *token = context;
-
+VOID EFIAPI TCPCompletionTokenEvent(EFI_EVENT event, VOID *context) {
 	(void) event;
 
-	if (token->Status == EFI_SUCCESS) {
-		TCPCompletionTokenEventFinish();
-	} else {
-		TCPCompletionTokenEventFinish();
-	}
+	TCPCompletionTokenEventFinish();
 }
 
 EFI_HANDLE SimpleNetworkProtocolHandle = NULL;
@@ -83,17 +76,18 @@ EFI_TCP4_LISTEN_TOKEN TCPConnectionAcceptToken;
 
 extern "C" void TCPAcceptConnection(EFI_TCP4 *, EFI_HANDLE);
 
-extern "C" 
-EFIAPI void TCPConnectionAccepted (EFI_EVENT Event, VOID *Context)
+VOID EFIAPI TCPConnectionAccepted (EFI_EVENT Event, VOID *Context)
 {
 	EFI_STATUS             status;
 	EFI_TCP4_LISTEN_TOKEN  *acceptToken;
+	
+	(void) Event;
 	
 	acceptToken = (EFI_TCP4_LISTEN_TOKEN *) Context;
 	status = acceptToken->CompletionToken.Status;
 	
 	if (EFI_ERROR (status)) {
-		Print (L"Connection Error: %d\n", status);
+		Print (L"Connection error: %d\n", status);
 		return;
 	}
 	
@@ -108,11 +102,13 @@ EFIAPI void TCPConnectionAccepted (EFI_EVENT Event, VOID *Context)
 	              EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 	
 	if (EFI_ERROR (status)) {
-		Print (L"Open TCP Connection: %d\n", status);
+		Print (L"Open TCP connection: %d\n", status);
 		return;
 	}
 	
 	TCPAcceptConnection (Child, acceptToken->NewChildHandle);
+	
+	BS->CloseEvent (Event);
 }
 
 extern "C"
@@ -129,4 +125,3 @@ void TCPConnectionAcceptInitialize() {
 		Print(L"\r\nError creating accept event: %d\r\n", status);
 	}
 }
-

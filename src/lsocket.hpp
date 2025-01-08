@@ -16,8 +16,6 @@ extern "C" EFI_GUID gEfiSimpleNetworkProtocolGuid;
 
 extern "C" EFI_HANDLE gImageHandle;
 
-extern "C" int TCPEventStatus;
-
 extern "C" EFI_HANDLE SimpleNetworkProtocolHandle;
 extern "C" EFI_SIMPLE_NETWORK_PROTOCOL *SimpleNetworkProtocolInterface;
 
@@ -31,11 +29,11 @@ extern "C" void TCPCompletionTokenEventFinish();
 
 extern "C" bool TCPCompletionTokenEventRunning();
 
-extern "C" void TCPCompletionTokenEvent(EFI_EVENT event, void *context);
+extern VOID EFIAPI TCPCompletionTokenEvent(EFI_EVENT event, VOID *context);
 
 extern "C" void TCPConnectionAcceptInitialize();
 
-extern "C" void TCPConnectionAccepted (EFI_EVENT Event, VOID *Context);
+extern VOID EFIAPI TCPConnectionAccepted (EFI_EVENT Event, VOID *Context);
 
 extern "C" void InitializeNetworkProtocol();
 
@@ -82,6 +80,8 @@ public:
 	virtual ~LSocketWriter() {
 	}
 };
+
+extern "C" int TCPEventStatus;
 
 extern "C" EFI_HANDLE gImageHandle;
 
@@ -161,14 +161,22 @@ public:
 			;
 	}
 	
+	LSocket (EFI_TCP4 *_Child, EFI_HANDLE _Handle) : Child (_Child), Handle (_Handle),
+		Reader(this), Writer(this) {
+	}
+	
 	virtual ~LSocket() {
-		uefi_call_wrapper(BS->CloseProtocol, 4, Handle, &Tcp4Protocol,
-		      gImageHandle, Handle);
-	
-		uefi_call_wrapper(ServiceBinding->DestroyChild, 2, ServiceBinding, Handle);
-	
-		uefi_call_wrapper(BS->CloseProtocol, 4, ServiceBindingHandle, &Tcp4ServiceBindingProtocol,
-			gImageHandle, ServiceBindingHandle);
+		if (Handle) {
+			uefi_call_wrapper(BS->CloseProtocol, 4, Handle, &Tcp4Protocol,
+				gImageHandle, Handle);
+			
+			uefi_call_wrapper(ServiceBinding->DestroyChild, 2, ServiceBinding, Handle);
+		}
+		
+		if (ServiceBindingHandle) {
+			uefi_call_wrapper(BS->CloseProtocol, 4, ServiceBindingHandle, &Tcp4ServiceBindingProtocol,
+				gImageHandle, ServiceBindingHandle);
+		}
 	}
 	
 	bool Connect(EFI_IPv4_ADDRESS *gRemoteAddress, UINT16 gRemotePort) {
@@ -183,11 +191,13 @@ public:
 		      TRUE,                                         // Use default address
 		      {
 		      	{
+		      		//this->Address.Addr[0], this->Address.Addr[1], this->Address.Addr[2], this->Address.Addr[3]
 		      		0, 0, 0, 0
 				  }
 			  },
 			  {
 		      	{
+		      		//255, 255, 255, 255
 		      		0, 0, 0, 0
 				  }
 			  },
@@ -203,31 +213,30 @@ public:
 		
 		EFI_IP4_MODE_DATA               Ip4ModeData;
 		
-		do {
-	      status = uefi_call_wrapper(Child->GetModeData, 6,
-		  	Child,
-	        NULL, NULL,
-	        &Ip4ModeData,
-	        NULL, NULL
-	    	);
-	    
-	    	if (EFI_ERROR(status) && status != EFI_NO_MAPPING) {
-	    		return false;
-			}
-	    
-	    	DoEvents();
-	    	
-	    	break;
-	    } while (!Ip4ModeData.IsConfigured);
+		status = Child->Configure (Child, &TcpConfigData);
+		  
+		  if (status == EFI_NO_MAPPING) {
+		    // Wait until the IP configuration process (probably DHCP) has finished
+		    do {
+		      status = Child->GetModeData (Child,
+		                               NULL, NULL,
+		                               &Ip4ModeData,
+		                               NULL, NULL
+		                               );
+		    } while (!Ip4ModeData.IsConfigured);
+		    
+			status = Child->Configure (Child, &TcpConfigData);
+		  } else if (EFI_ERROR (status)) {
+		    Print (L"TCP configure: %r\r\n", status);
+		  }
 
-		status = uefi_call_wrapper(Child->Configure, 2, Child, &TcpConfigData);
+		status = Child->Configure (Child, &TcpConfigData);
 		
-		if (status == EFI_ACCESS_DENIED) {
-			Print (L"\r\nTCP Configure (2): %d\r\n", status);
+		//if (status == EFI_ACCESS_DENIED) {
+		//	Print (L"Access denied\r\n");
+		//	return false;
+		//}
 
-			return false;
-		}
-		
 		EFI_TCP4_CONNECTION_TOKEN token;
 		
 		status = uefi_call_wrapper(BS->CreateEvent, 5, EVT_NOTIFY_SIGNAL,
@@ -290,7 +299,9 @@ public:
     	
     	txdata.DataLength = transmitDataLength;
 	    txdata.FragmentCount = 1;
-	    frag = &txdata.FragmentTable[0];
+	    txdata.Push = TRUE;
+	    txdata.Urgent = FALSE;
+		frag = &txdata.FragmentTable[0];
 	    frag->FragmentLength = transmitDataLength;
 	    frag->FragmentBuffer = (void*) transmitData;
 	    
@@ -328,6 +339,10 @@ public:
 				return false;
 			}
 			
+			if (EFI_ERROR(iotoken.CompletionToken.Status)) {
+				TCPCompletionTokenEventFinish();
+			}
+			
 			DoEvents();
 		}
 		
@@ -353,9 +368,11 @@ public:
 		
 		ZeroMem(&rxdata, sizeof(rxdata));
     	ZeroMem(&iotoken, sizeof(iotoken));
+
+		TCPCompletionTokenEventStart();
     	
     	EFI_STATUS status = uefi_call_wrapper(BS->CreateEvent, 5, EVT_NOTIFY_SIGNAL,
-			TPL_CALLBACK, (EFI_EVENT_NOTIFY) TCPCompletionTokenEvent, &iotoken.CompletionToken, &iotoken.CompletionToken.Event);
+			TPL_CALLBACK, (EFI_EVENT_NOTIFY) TCPCompletionTokenEvent, &TCPEventStatus, &iotoken.CompletionToken.Event);
 		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in creating event: %d\r\n", status);
@@ -364,13 +381,12 @@ public:
 		}
 		
 		iotoken.Packet.RxData = &rxdata;
+		rxdata.UrgentFlag = FALSE;
 	    rxdata.FragmentCount = 1;
     	rxdata.DataLength = *databufLength;
     	frag = &rxdata.FragmentTable[0];
     	frag->FragmentBuffer = databuf;
     	frag->FragmentLength = *databufLength;
-
-		TCPCompletionTokenEventStart();
     	
     	status = uefi_call_wrapper(this->Child->Receive, 2, this->Child, &iotoken);
     	
@@ -390,6 +406,8 @@ public:
 			return false;
 		}
 		
+		int Counter = 0;
+		
 		while (TCPCompletionTokenEventRunning()) {
 			status = uefi_call_wrapper(this->Child->Poll, 1, this->Child);
 			
@@ -402,6 +420,10 @@ public:
 			}
 			
 			DoEvents();
+			
+			if (EFI_ERROR(iotoken.CompletionToken.Status)) {
+				TCPCompletionTokenEventFinish();
+			}
 		}
 
 		if (EFI_ERROR(iotoken.CompletionToken.Status)) {
@@ -430,7 +452,69 @@ public:
 			return false;
 		}
 		
-		EFI_STATUS status =  uefi_call_wrapper(this->Child->Accept, 2, this->Child, &TCPConnectionAcceptToken);
+		EFI_TCP4_CONFIG_DATA TcpConfigData = {
+		    0x00,                                           // IPv4 Type of Service
+		    255,                                            // IPv4 Time to Live
+		    {                                               // AccessPoint:
+		      TRUE,                                         // Use default address
+		      {
+		      	{
+		      		//this->Address.Addr[0], this->Address.Addr[1], this->Address.Addr[2], this->Address.Addr[3]
+		      		0, 0, 0, 0
+				  }
+			  },
+			  {
+		      	{
+		      		//255, 255, 255, 255
+		      		0, 0, 0, 0
+				  }
+			  },
+		      this->Port,                             				// Station port
+		      { {0, 0, 0, 0} },                             // Remote address: accept any
+		      0,                                            // Remote Port: accept any
+		      FALSE                                         // ActiveFlag: be a "server"
+		    },
+		    NULL                                            // Default advanced TCP options
+		  };
+		
+		EFI_STATUS status = 0;
+		
+		EFI_IP4_MODE_DATA               Ip4ModeData;
+		
+		  status = Child->Configure (Child, &TcpConfigData);
+		  
+		  if (status == EFI_NO_MAPPING) {
+		    // Wait until the IP configuration process (probably DHCP) has finished
+		    do {
+		      status = Child->GetModeData (Child,
+		                               NULL, NULL,
+		                               &Ip4ModeData,
+		                               NULL, NULL
+		                               );
+		    } while (!Ip4ModeData.IsConfigured);
+		    status = Child->Configure (Child, &TcpConfigData);
+		  } else if (EFI_ERROR (status)) {
+		    Print (L"TCP configure: %r\r\n", status);
+		  }
+
+		status = Child->Configure (Child, &TcpConfigData);
+
+		status = Child->GetModeData (Child,
+		                               NULL, NULL,
+		                               &Ip4ModeData,
+		                               NULL, NULL
+		                               );
+		                               
+		  CHAR16                          IpAddrString[16];
+
+		IP4_ADDR_TO_STRING (Ip4ModeData.ConfigData.StationAddress, IpAddrString);
+
+		Print (L"\r\nTCP transport configured.\r\n");
+  		Print (L"IP address: %s\r\n", IpAddrString);
+		
+		TCPConnectionAcceptInitialize();
+		
+		status =  uefi_call_wrapper(this->Child->Accept, 2, this->Child, &TCPConnectionAcceptToken);
 		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in accepting event: %d\r\n", status);
@@ -444,7 +528,7 @@ public:
 
 bool LSocketReader::ReadBuffer() {
 	if (Socket && !this->AtEnd()) {
-		UINTN BufferSize = sizeof (this->buffer) - 1;
+		UINTN BufferSize = ReaderBufferSize - 1;
 		
 		if (!Socket->Receive(this->buffer, &BufferSize)) {
 			this->size = ~0U;

@@ -49,7 +49,38 @@ extern "C" int Pyramids_Main();
 extern "C" int AntTSP_Main();
 
 extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
+	Print (L"Accepted\r\n");
 	
+	LSocket Socket (Child, Handle);
+	
+	CHAR8 szBuffer[256];
+	UINTN lBuffer = 0;
+
+	Print (L"Receiving\r\n");
+	
+	while (!Socket.Reader.AtEnd()) {
+		Socket.Reader.Next();
+		
+		if (!Socket.Reader.AtEnd()) {
+			szBuffer[lBuffer++] = Socket.Reader.Current();
+		}
+		
+		if (lBuffer == 128) {
+			szBuffer[lBuffer] = L'\0';
+			
+			lBuffer = 0;
+			
+			Print(L"%s", szBuffer);
+		}
+	}
+	
+	if (lBuffer) {
+		szBuffer[lBuffer] = L'\0';
+		
+		Print(L"%s", szBuffer);
+	}
+	
+	Print (L"Received\r\n");
 }
 
 extern "C"
@@ -65,7 +96,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	
 	InitializeFileSystem();
 	
-	TCPConnectionAcceptInitialize();
+	TCPEventStatus = 0;
 	
 	while (true) {
 		CHAR16 szLine[MAX_PATH];
@@ -120,7 +151,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 			LFile file(szPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 			
-			CHAR16 szBuffer[130];
+			CHAR16 szBuffer[160];
 			UINTN lBuffer = 0;
 			
 			while (!file.Reader.AtEnd()) {
@@ -151,9 +182,9 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 			EFI_IPv4_ADDRESS RemoteAddress;
 			
-			EFI_IPv4_ADDRESS LocalAddress = { 192, 168, 0, 14 };
+			EFI_IPv4_ADDRESS LocalAddress = { 0, 0, 0, 0 };
 			
-			LSocket Socket(&LocalAddress, 160);
+			LSocket Socket(&LocalAddress, 140);
 			
 			CHAR16 *p = szLine + 8;
 			
@@ -181,7 +212,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 				RemotePort = current;
 			}
 			
-			CHAR16 szBuffer[130];
+			CHAR16 szBuffer[160];
 			UINTN lBuffer = 0;
 			
 			if (Socket.Connect(&RemoteAddress, RemotePort)) {
@@ -213,9 +244,24 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			}
 			
 			Print(L"\r\n");
+		} else if (!StrnCmp(szLine, L"accept", 6)) {			
+			EFI_IPv4_ADDRESS LocalAddress = { 192, 168, 0, 16 };
+			
+			LSocket Socket(&LocalAddress, 80);
+						
+			Socket.Accept();
+			
+  			Print(L"\r\nPress any key to quit.\r\n");
+
+			EFI_EVENT                       WaitEventArray[1];
+  			UINTN                           EventIndex;
+  			
+			WaitEventArray[0] = ST->ConIn->WaitForKey;
+			
+			BS->WaitForEvent (1, WaitEventArray, &EventIndex);
 		}
 	}
-			
+		
 	return EFI_SUCCESS;
 }
 

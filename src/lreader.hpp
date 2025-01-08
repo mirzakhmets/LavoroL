@@ -5,14 +5,14 @@
 
 const int ReaderEof = -1;
 
-const int BufferSize = 256;
+const int ReaderBufferSize = 256;
 
 class LReader {
 protected:
 	unsigned long size = 0;
 	unsigned long current = 0;
 	
-	unsigned char buffer[BufferSize];
+	unsigned char buffer[ReaderBufferSize];
 	
 	virtual bool ReadBuffer() {
 		return true;
