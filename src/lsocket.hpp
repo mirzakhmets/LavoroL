@@ -98,6 +98,12 @@ protected:
 	EFI_SERVICE_BINDING *ServiceBinding = NULL;
 	
 	bool Closed = false;
+	
+	EFI_TCP4_IO_TOKEN iotoken;
+	EFI_TCP4_RECEIVE_DATA rxdata;
+	EFI_TCP4_TRANSMIT_DATA txdata;
+	EFI_TCP4_CONNECTION_TOKEN token;
+	EFI_TCP4_FRAGMENT_DATA *frag = NULL;
 public:
 	UINT16 Port;
 	EFI_IPv4_ADDRESS Address;
@@ -237,8 +243,6 @@ public:
 		//	return false;
 		//}
 
-		EFI_TCP4_CONNECTION_TOKEN token;
-		
 		status = uefi_call_wrapper(BS->CreateEvent, 5, EVT_NOTIFY_SIGNAL,
 			TPL_CALLBACK, (EFI_EVENT_NOTIFY) TCPCompletionTokenEvent, &token.CompletionToken, &token.CompletionToken.Event);
 		
@@ -289,10 +293,6 @@ public:
 		if (Child == NULL) {
 			return false;
 		}
-		
-		EFI_TCP4_IO_TOKEN iotoken;
-    	EFI_TCP4_TRANSMIT_DATA txdata;
-		EFI_TCP4_FRAGMENT_DATA *frag;
     	
     	ZeroMem(&txdata, sizeof(txdata));
     	ZeroMem(&iotoken, sizeof(iotoken));    	
@@ -361,10 +361,6 @@ public:
 		if (Child == NULL || this->Closed) {
 			return false;
 		}
-		
-		EFI_TCP4_IO_TOKEN iotoken;
-		EFI_TCP4_RECEIVE_DATA rxdata;
-		EFI_TCP4_FRAGMENT_DATA *frag;
 		
 		ZeroMem(&rxdata, sizeof(rxdata));
     	ZeroMem(&iotoken, sizeof(iotoken));

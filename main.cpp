@@ -42,6 +42,15 @@ extern "C" void __cxa_throw_bad_array_new_length() {
 
 const unsigned MAX_PATH = 256;
 
+CHAR16 szLine[MAX_PATH];
+CHAR16 szBuffer[256];
+UINTN szBufferSize;
+CHAR16 szPath[MAX_PATH];
+
+UINTN RemotePort = 80;
+EFI_IPv4_ADDRESS RemoteAddress;
+EFI_IPv4_ADDRESS LocalAddress = { 0, 0, 0, 0 };
+			
 extern "C" int Box_Main();
 
 extern "C" int Pyramids_Main();
@@ -51,36 +60,37 @@ extern "C" int AntTSP_Main();
 extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
 	Print (L"Accepted\r\n");
 	
-	LSocket Socket (Child, Handle);
+	LSocket* Socket = new LSocket (Child, Handle);
 	
-	CHAR8 szBuffer[256];
-	UINTN lBuffer = 0;
+	szBufferSize = 0;
 
 	Print (L"Receiving\r\n");
 	
-	while (!Socket.Reader.AtEnd()) {
-		Socket.Reader.Next();
+	while (!Socket->Reader.AtEnd()) {
+		Socket->Reader.Next();
 		
-		if (!Socket.Reader.AtEnd()) {
-			szBuffer[lBuffer++] = Socket.Reader.Current();
+		if (!Socket->Reader.AtEnd()) {
+			szBuffer[szBufferSize++] = Socket->Reader.Current();
 		}
 		
-		if (lBuffer == 128) {
-			szBuffer[lBuffer] = L'\0';
+		if (szBufferSize == 128) {
+			szBuffer[szBufferSize] = L'\0';
 			
-			lBuffer = 0;
+			szBufferSize = 0;
 			
 			Print(L"%s", szBuffer);
 		}
 	}
 	
-	if (lBuffer) {
-		szBuffer[lBuffer] = L'\0';
+	if (szBufferSize) {
+		szBuffer[szBufferSize] = L'\0';
 		
 		Print(L"%s", szBuffer);
 	}
 	
 	Print (L"Received\r\n");
+	
+	delete Socket;
 }
 
 extern "C"
@@ -99,8 +109,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	TCPEventStatus = 0;
 	
 	while (true) {
-		CHAR16 szLine[MAX_PATH];
-		
 		Input(L"\r\n$>> ", szLine, sizeof(szLine) / sizeof(szLine[0]));
 		
 		if (!StrCmp(szLine, L"ACM/Box")) {
@@ -110,31 +118,31 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 		} else if (!StrCmp(szLine, L"AntTSP")) {
 			AntTSP_Main();
 		} else if (!StrCmp(szLine, L"ls")) {
-			LFile file(szCurrentPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+			LFile *file = new LFile(szCurrentPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 			
-			CHAR8 Buffer[256];
-			UINTN BufferSize = sizeof (Buffer) - 1;
+			szBufferSize = sizeof (szBuffer);
 			
-			while (BufferSize) {
-				BufferSize = sizeof (Buffer) - 1;
+			while (szBufferSize) {
+				szBufferSize = sizeof (szBuffer) - 1;
 				
-				EFI_STATUS status = uefi_call_wrapper(file.Handle->Read, 3, file.Handle, &BufferSize, Buffer);
+				EFI_STATUS status = uefi_call_wrapper(file->Handle->Read, 3, file->Handle, &szBufferSize, szBuffer);
 				
 				if (EFI_ERROR(status)) {
 					Print(L"\r\nError in reading directory: %d\r\n", status);
-				} else if (BufferSize > 0) {
-					Print(L"\r\n%s%s", ((EFI_FILE_INFO*) Buffer)->FileName,
-						((EFI_FILE_INFO*) Buffer)->Attribute & EFI_FILE_DIRECTORY ? L" [d]" : L"");
+				} else if (szBufferSize) {
+					Print(L"\r\n%s%s", ((EFI_FILE_INFO*) szBuffer)->FileName,
+						((EFI_FILE_INFO*) szBuffer)->Attribute & EFI_FILE_DIRECTORY ? L" [d]" : L"");
 				}
 			}
 			
 			Print(L"\r\n");
+			
+			delete file;
 		} else if (!StrnCmp(szLine, L"cd", 2)) {
 			StrCpy(szCurrentPath, szLine + 3);
 		} else if (!StrCmp(szLine, L"cwd")) {
 			Print(L"\r\n%s\r\n", szCurrentPath);
 		} else if (!StrnCmp(szLine, L"cat", 3)) {
-			CHAR16 szPath[MAX_PATH];
 			CHAR16 *szCatPath = szLine + 4;
 			
 			if (szCatPath[0] != '\\') {
@@ -149,42 +157,35 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 				StrCpy (szPath, szCatPath);
 			}
 			
-			LFile file(szPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+			LFile* file = new LFile(szPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 			
-			CHAR16 szBuffer[160];
-			UINTN lBuffer = 0;
-			
-			while (!file.Reader.AtEnd()) {
-				file.Reader.Next();
+			while (!file->Reader.AtEnd()) {
+				file->Reader.Next();
 				
-				if (!file.Reader.AtEnd()) {
-					szBuffer[lBuffer++] = file.Reader.Current();
+				if (!file->Reader.AtEnd()) {
+					szBuffer[szBufferSize++] = file->Reader.Current();
 				}
 				
-				if (lBuffer == 128) {
-					szBuffer[lBuffer] = L'\0';
+				if (szBufferSize == 128) {
+					szBuffer[szBufferSize] = L'\0';
 					
 					Print (L"%s", szBuffer);
 					
-					lBuffer = 0;
+					szBufferSize = 0;
 				}
 			}
 			
-			if (lBuffer) {
-				szBuffer[lBuffer] = L'\0';
+			if (szBufferSize) {
+				szBuffer[szBufferSize] = L'\0';
 				
 				Print (L"%s", szBuffer);
 			}
 			
 			Print (L"\r\n");
+			
+			delete file;
 		} else if (!StrnCmp(szLine, L"connect", 7)) {
-			UINTN RemotePort = 80;
-			
-			EFI_IPv4_ADDRESS RemoteAddress;
-			
-			EFI_IPv4_ADDRESS LocalAddress = { 0, 0, 0, 0 };
-			
-			LSocket Socket(&LocalAddress, 140);
+			LSocket *Socket = new LSocket(&LocalAddress, 140);
 			
 			CHAR16 *p = szLine + 8;
 			
@@ -212,44 +213,41 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 				RemotePort = current;
 			}
 			
-			CHAR16 szBuffer[160];
-			UINTN lBuffer = 0;
+			if (Socket->Connect(&RemoteAddress, RemotePort)) {
+				Socket->Writer.Write("GET / HTTP/1.0\r\n\r\n", 20);
 			
-			if (Socket.Connect(&RemoteAddress, RemotePort)) {
-				Socket.Writer.Write("GET / HTTP/1.0\r\n\r\n", 20);
-			
-				Socket.Writer.Flush();
+				Socket->Writer.Flush();
 				
-				while (!Socket.Reader.AtEnd()) {
-					Socket.Reader.Next();
+				while (!Socket->Reader.AtEnd()) {
+					Socket->Reader.Next();
 					
-					if (!Socket.Reader.AtEnd()) {
-						szBuffer[lBuffer++] = Socket.Reader.Current();
+					if (!Socket->Reader.AtEnd()) {
+						szBuffer[szBufferSize++] = Socket->Reader.Current();
 					}
 					
-					if (lBuffer == 128) {
-						szBuffer[lBuffer] = L'\0';
+					if (szBufferSize == 128) {
+						szBuffer[szBufferSize] = L'\0';
 						
-						lBuffer = 0;
+						szBufferSize = 0;
 						
 						Print(L"%s", szBuffer);
 					}
 				}
 			}
 			
-			if (lBuffer) {
-				szBuffer[lBuffer] = L'\0';
+			if (szBufferSize) {
+				szBuffer[szBufferSize] = L'\0';
 			
 				Print(L"%s\r\n", szBuffer);
 			}
 			
 			Print(L"\r\n");
-		} else if (!StrnCmp(szLine, L"accept", 6)) {			
-			EFI_IPv4_ADDRESS LocalAddress = { 192, 168, 0, 16 };
 			
-			LSocket Socket(&LocalAddress, 80);
-						
-			Socket.Accept();
+			delete Socket;
+		} else if (!StrnCmp(szLine, L"accept", 6)) {			
+			LSocket *Socket = new LSocket(&LocalAddress, 80);
+			
+			Socket->Accept();
 			
   			Print(L"\r\nPress any key to quit.\r\n");
 
@@ -259,6 +257,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			WaitEventArray[0] = ST->ConIn->WaitForKey;
 			
 			BS->WaitForEvent (1, WaitEventArray, &EventIndex);
+			
+			delete Socket;
 		}
 	}
 		
