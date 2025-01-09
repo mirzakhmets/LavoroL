@@ -50,8 +50,9 @@ CHAR16 *szBuffer;
 CHAR16 *szPath;
 
 UINTN RemotePort = 80;
+UINTN LocalPort = 539;
 EFI_IPv4_ADDRESS RemoteAddress = { 0, 0, 0, 0 };
-EFI_IPv4_ADDRESS LocalAddress = { 0, 0, 0, 0 };
+EFI_IPv4_ADDRESS LocalAddress = { 192, 168, 3, 16 };
 			
 extern "C" int Box_Main();
 
@@ -185,7 +186,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			while (!file->Reader.AtEnd()) {
 				file->Reader.Next();
 				
-				if (!file->Reader.Current() != ReaderEof) {
+				if (file->Reader.Current() != ReaderEof) {
 					szBuffer[szBufferSize++] = file->Reader.Current();
 				} else {
 					break;
@@ -216,7 +217,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 			delete file;
 		} else if (!StrnCmp(szLine, L"connect", 7)) {
-			LSocket *Socket = new LSocket(&LocalAddress, 140);
+			LSocket *Socket = new LSocket(&LocalAddress, LocalPort);
 			
 			CHAR16 *p = szLine + 8;
 			
@@ -258,7 +259,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 				while (!Socket->Reader.AtEnd()) {
 					Socket->Reader.Next();
 					
-					if (!Socket->Reader.Current() != ReaderEof) {
+					if (Socket->Reader.Current() != ReaderEof) {
 						szBuffer[szBufferSize++] = Socket->Reader.Current();
 					} else {
 						break;
@@ -291,7 +292,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 			delete Socket;
 		} else if (!StrnCmp(szLine, L"accept", 6)) {			
-			LSocket *Socket = new LSocket(&LocalAddress, 80);
+			LSocket *Socket = new LSocket(&LocalAddress, LocalPort);
 
   			TCPAcceptStatus = 0;
   			

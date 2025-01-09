@@ -202,17 +202,17 @@ public:
 		    0x00,                                           // IPv4 Type of Service
 		    255,                                            // IPv4 Time to Live
 		    {                                               // AccessPoint:
-		      TRUE,                                         // Use default address
+		      FALSE,                                         // Use default address
 		      {
 		      	{
-		      		//this->Address.Addr[0], this->Address.Addr[1], this->Address.Addr[2], this->Address.Addr[3]
-		      		0, 0, 0, 0
+		      		this->Address.Addr[0], this->Address.Addr[1], this->Address.Addr[2], this->Address.Addr[3]
+		      		//0, 0, 0, 0
 				  }
 			  },
 			  {
 		      	{
-		      		//255, 255, 255, 255
-		      		0, 0, 0, 0
+		      		255, 255, 255, 255
+		      		//0, 0, 0, 0
 				  }
 			  },
 		      this->Port,                             				// Station port
@@ -252,12 +252,18 @@ public:
 		    Print (L"TCP configure: %r\r\n", status);
 		  }
 
-		//status = Child->Configure (Child, &TcpConfigData);
-		
 		if (status == EFI_ACCESS_DENIED) {
 			Print (L"Access denied\r\n");
 			
-			return false;
+			status = Child->Configure (Child, NULL);
+			
+			status = Child->Configure (Child, &TcpConfigData);
+			
+			if (EFI_ERROR(status)) {
+				Print (L"Reconfiguration error: %d\r\n", status);
+				
+				return false;
+			}
 		}
 
 		status = uefi_call_wrapper(BS->CreateEvent, 5, EVT_NOTIFY_SIGNAL,
@@ -489,17 +495,17 @@ public:
 		    0x00,                                           // IPv4 Type of Service
 		    255,                                            // IPv4 Time to Live
 		    {                                               // AccessPoint:
-		      TRUE,                                         // Use default address
+		      FALSE,                                         // Use default address
 		      {
 		      	{
-		      		//this->Address.Addr[0], this->Address.Addr[1], this->Address.Addr[2], this->Address.Addr[3]
-		      		0, 0, 0, 0
+		      		this->Address.Addr[0], this->Address.Addr[1], this->Address.Addr[2], this->Address.Addr[3]
+		      		//192, 168, 3, 14
 				  }
 			  },
 			  {
 		      	{
-		      		//255, 255, 255, 255
-		      		0, 0, 0, 0
+		      		255, 255, 255, 255
+		      		//0, 0, 0, 0
 				  }
 			  },
 		      this->Port,                             				// Station port
@@ -542,7 +548,15 @@ public:
 		if (status == EFI_ACCESS_DENIED) {
 			Print (L"Access denied\r\n");
 			
-			return false;
+			status = Child->Configure (Child, NULL);
+			
+			status = Child->Configure (Child, &TcpConfigData);
+			
+			if (EFI_ERROR(status)) {
+				Print (L"Reconfiguration error: %d\r\n", status);
+				
+				return false;
+			}
 		}
 		
 		status = Child->GetModeData (Child,
