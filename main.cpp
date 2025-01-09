@@ -42,9 +42,9 @@ extern "C" void __cxa_throw_bad_array_new_length() {
 
 const unsigned MAX_PATH = 256;
 
-const unsigned MAX_BUFFER_SIZE = 64000;
+const unsigned MAX_BUFFER_SIZE = 256;
 
-UINTN szBufferSize;
+UINTN szBufferSize = 0;
 CHAR16 *szLine;
 CHAR16 *szBuffer;
 CHAR16 *szPath;
@@ -66,6 +66,8 @@ extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
 	
 	szBufferSize = 0;
 
+	ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
+
 	Print (L"Receiving\r\n");
 	
 	while (!Socket->Reader.AtEnd()) {
@@ -75,19 +77,25 @@ extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
 			szBuffer[szBufferSize++] = Socket->Reader.Current();
 		}
 		
-		if (szBufferSize == 128) {
-			szBuffer[szBufferSize] = 0;
+		if (szBufferSize == MAX_BUFFER_SIZE - 1) {
+			szBuffer[szBufferSize] = (CHAR16) 0;
+			
+			Print(L"%s", szBuffer);
 			
 			szBufferSize = 0;
 			
-			Print(L"%s", szBuffer);
+			ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
 		}
 	}
 	
 	if (szBufferSize) {
-		szBuffer[szBufferSize] = 0;
+		szBuffer[szBufferSize] = (CHAR16) 0;
 		
 		Print(L"%s", szBuffer);
+		
+		szBufferSize =  0;
+		
+		ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
 	}
 	
 	Print (L"Received\r\n");
@@ -131,10 +139,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 		} else if (!StrCmp(szLine, L"ls")) {
 			LFile *file = new LFile(szCurrentPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 			
-			szBufferSize = MAX_BUFFER_SIZE;
+			szBufferSize = MAX_BUFFER_SIZE - 1;
 			
 			while (szBufferSize) {
-				szBufferSize = MAX_BUFFER_SIZE;
+				szBufferSize = MAX_BUFFER_SIZE - 1;
 				
 				EFI_STATUS status = uefi_call_wrapper(file->Handle->Read, 3, file->Handle, &szBufferSize, szBuffer);
 				
@@ -172,6 +180,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 			szBufferSize = 0;
 			
+			ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
+			
 			while (!file->Reader.AtEnd()) {
 				file->Reader.Next();
 				
@@ -179,19 +189,25 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 					szBuffer[szBufferSize++] = file->Reader.Current();
 				}
 				
-				if (szBufferSize == 128) {
-					szBuffer[szBufferSize] = 0;
+				if (szBufferSize == MAX_BUFFER_SIZE - 1) {
+					szBuffer[szBufferSize] = (CHAR16) 0;
 					
 					Print (L"%s", szBuffer);
 					
 					szBufferSize = 0;
+					
+					ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
 				}
 			}
 			
 			if (szBufferSize) {
-				szBuffer[szBufferSize] = 0;
+				szBuffer[szBufferSize] = (CHAR16) 0;
 				
 				Print (L"%s", szBuffer);
+				
+				szBufferSize = 0;
+				
+				ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
 			}
 			
 			Print (L"\r\n");
@@ -233,6 +249,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 				
 				szBufferSize = 0;
 				
+				ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
+
 				while (!Socket->Reader.AtEnd()) {
 					Socket->Reader.Next();
 					
@@ -240,20 +258,26 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 						szBuffer[szBufferSize++] = Socket->Reader.Current();
 					}
 					
-					if (szBufferSize == 128) {
-						szBuffer[szBufferSize] = 0;
+					if (szBufferSize == MAX_BUFFER_SIZE - 1) {
+						szBuffer[szBufferSize] = (CHAR16) 0;
+						
+						Print(L"%s", szBuffer);
 						
 						szBufferSize = 0;
 						
-						Print(L"%s", szBuffer);
+						ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
 					}
 				}
 			}
 			
 			if (szBufferSize) {
-				szBuffer[szBufferSize] = 0;
+				szBuffer[szBufferSize] = (CHAR16) 0;
 				
 				Print(L"%s\r\n", szBuffer);
+				
+				szBufferSize = 0;
+				
+				ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
 			}
 			
 			Print(L"\r\n");

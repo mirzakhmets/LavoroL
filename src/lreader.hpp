@@ -5,7 +5,7 @@
 
 const int ReaderEof = -1;
 
-const int ReaderBufferSize = 64000;
+const int ReaderBufferSize = 32768;
 
 class LReader {
 protected:
@@ -53,6 +53,8 @@ public:
 				
 				if (this->current == this->size) {
 					this->size = ~0U;
+					
+					return ReaderEof;
 				}
 			}
 		}
