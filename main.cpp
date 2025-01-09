@@ -42,13 +42,15 @@ extern "C" void __cxa_throw_bad_array_new_length() {
 
 const unsigned MAX_PATH = 256;
 
-CHAR16 szLine[MAX_PATH];
-CHAR16 szBuffer[256];
+const unsigned MAX_BUFFER_SIZE = 64000;
+
 UINTN szBufferSize;
-CHAR16 szPath[MAX_PATH];
+CHAR16 *szLine;
+CHAR16 *szBuffer;
+CHAR16 *szPath;
 
 UINTN RemotePort = 80;
-EFI_IPv4_ADDRESS RemoteAddress;
+EFI_IPv4_ADDRESS RemoteAddress = { 0, 0, 0, 0 };
 EFI_IPv4_ADDRESS LocalAddress = { 0, 0, 0, 0 };
 			
 extern "C" int Box_Main();
@@ -74,7 +76,7 @@ extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
 		}
 		
 		if (szBufferSize == 128) {
-			szBuffer[szBufferSize] = L'\0';
+			szBuffer[szBufferSize] = 0;
 			
 			szBufferSize = 0;
 			
@@ -83,7 +85,7 @@ extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
 	}
 	
 	if (szBufferSize) {
-		szBuffer[szBufferSize] = L'\0';
+		szBuffer[szBufferSize] = 0;
 		
 		Print(L"%s", szBuffer);
 	}
@@ -100,6 +102,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
 	InitializeLib(ImageHandle, SystemTable);
 
+	szLine = new CHAR16[MAX_PATH];
+	szPath = new CHAR16[MAX_PATH];
+	szBuffer = new CHAR16[MAX_BUFFER_SIZE];
+	szCurrentPath = new CHAR16[MAX_PATH];
+
 	Print(L"Welcome to LavoroL!\r\n");
 
 	gImageHandle = ImageHandle;
@@ -107,9 +114,9 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	InitializeFileSystem();
 	
 	TCPEventStatus = 0;
-	
+
 	while (true) {
-		Input(L"\r\n$>> ", szLine, sizeof(szLine) / sizeof(szLine[0]));
+		Input(L"\r\n$>> ", szLine, MAX_PATH);
 		
 		if (!StrCmp(szLine, L"ACM/Box")) {
 			Box_Main();
@@ -120,10 +127,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 		} else if (!StrCmp(szLine, L"ls")) {
 			LFile *file = new LFile(szCurrentPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 			
-			szBufferSize = sizeof (szBuffer);
+			szBufferSize = MAX_BUFFER_SIZE;
 			
 			while (szBufferSize) {
-				szBufferSize = sizeof (szBuffer) - 1;
+				szBufferSize = MAX_BUFFER_SIZE;
 				
 				EFI_STATUS status = uefi_call_wrapper(file->Handle->Read, 3, file->Handle, &szBufferSize, szBuffer);
 				
@@ -159,6 +166,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 			LFile* file = new LFile(szPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 			
+			szBufferSize = 0;
+			
 			while (!file->Reader.AtEnd()) {
 				file->Reader.Next();
 				
@@ -167,7 +176,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 				}
 				
 				if (szBufferSize == 128) {
-					szBuffer[szBufferSize] = L'\0';
+					szBuffer[szBufferSize] = 0;
 					
 					Print (L"%s", szBuffer);
 					
@@ -176,7 +185,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			}
 			
 			if (szBufferSize) {
-				szBuffer[szBufferSize] = L'\0';
+				szBuffer[szBufferSize] = 0;
 				
 				Print (L"%s", szBuffer);
 			}
@@ -218,6 +227,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 				Socket->Writer.Flush();
 				
+				szBufferSize = 0;
+				
 				while (!Socket->Reader.AtEnd()) {
 					Socket->Reader.Next();
 					
@@ -226,7 +237,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 					}
 					
 					if (szBufferSize == 128) {
-						szBuffer[szBufferSize] = L'\0';
+						szBuffer[szBufferSize] = 0;
 						
 						szBufferSize = 0;
 						
@@ -236,8 +247,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			}
 			
 			if (szBufferSize) {
-				szBuffer[szBufferSize] = L'\0';
-			
+				szBuffer[szBufferSize] = 0;
+				
 				Print(L"%s\r\n", szBuffer);
 			}
 			

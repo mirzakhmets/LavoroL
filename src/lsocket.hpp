@@ -190,6 +190,8 @@ public:
 			return false;
 		}
 		
+		ZeroMem(&token, sizeof(token));
+		
 		EFI_TCP4_CONFIG_DATA TcpConfigData = {
 		    0x00,                                           // IPv4 Type of Service
 		    255,                                            // IPv4 Time to Live
@@ -229,6 +231,14 @@ public:
 		                               &Ip4ModeData,
 		                               NULL, NULL
 		                               );
+		        
+		    	if (status == EFI_ACCESS_DENIED) {
+					Print (L"Access denied\r\n");
+					
+					return false;
+				} else if (EFI_ERROR (status)) {
+					break;
+				}
 		    } while (!Ip4ModeData.IsConfigured);
 		    
 			status = Child->Configure (Child, &TcpConfigData);
@@ -236,12 +246,13 @@ public:
 		    Print (L"TCP configure: %r\r\n", status);
 		  }
 
-		status = Child->Configure (Child, &TcpConfigData);
+		//status = Child->Configure (Child, &TcpConfigData);
 		
-		//if (status == EFI_ACCESS_DENIED) {
-		//	Print (L"Access denied\r\n");
-		//	return false;
-		//}
+		if (status == EFI_ACCESS_DENIED) {
+			Print (L"Access denied\r\n");
+			
+			return false;
+		}
 
 		status = uefi_call_wrapper(BS->CreateEvent, 5, EVT_NOTIFY_SIGNAL,
 			TPL_CALLBACK, (EFI_EVENT_NOTIFY) TCPCompletionTokenEvent, &token.CompletionToken, &token.CompletionToken.Event);
@@ -264,6 +275,8 @@ public:
 			return false;
 		}
 		
+		int Counter = 0;
+		
 		while (TCPCompletionTokenEventRunning()) {
 			status = uefi_call_wrapper(this->Child->Poll, 1, this->Child);
 			
@@ -276,6 +289,12 @@ public:
 			}
 			
 			DoEvents();
+			
+			if (EFI_ERROR(token.CompletionToken.Status)) {
+				TCPCompletionTokenEventFinish();
+			} else if (++Counter > 1000000) {
+				TCPCompletionTokenEventFinish();
+			}
 		}
 		
 		status = uefi_call_wrapper(BS->CloseEvent, 1, token.CompletionToken.Event);
@@ -328,6 +347,8 @@ public:
 			return false;
 		}
 		
+		int Counter = 0;
+		
 		while (TCPCompletionTokenEventRunning()) {
 			status = uefi_call_wrapper(this->Child->Poll, 1, this->Child);
 			
@@ -340,6 +361,8 @@ public:
 			}
 			
 			if (EFI_ERROR(iotoken.CompletionToken.Status)) {
+				TCPCompletionTokenEventFinish();
+			} else if (++Counter > 1000000) {
 				TCPCompletionTokenEventFinish();
 			}
 			
@@ -418,6 +441,12 @@ public:
 			DoEvents();
 			
 			if (EFI_ERROR(iotoken.CompletionToken.Status)) {
+				frag->FragmentLength = 0;
+				
+				TCPCompletionTokenEventFinish();
+			} else if (++Counter > 1000000) {
+				frag->FragmentLength = 0;
+				
 				TCPCompletionTokenEventFinish();
 			}
 		}
@@ -447,6 +476,8 @@ public:
 		if (Child == NULL) {
 			return false;
 		}
+		
+		ZeroMem(&TCPConnectionAcceptToken, sizeof(TCPConnectionAcceptToken));
 		
 		EFI_TCP4_CONFIG_DATA TcpConfigData = {
 		    0x00,                                           // IPv4 Type of Service
@@ -487,13 +518,22 @@ public:
 		                               &Ip4ModeData,
 		                               NULL, NULL
 		                               );
+		        
+		        if (status == EFI_ACCESS_DENIED) {
+					Print (L"Access denied\r\n");
+					
+					return false;
+				} else if (EFI_ERROR (status)) {
+					break;
+				}
+
 		    } while (!Ip4ModeData.IsConfigured);
 		    status = Child->Configure (Child, &TcpConfigData);
 		  } else if (EFI_ERROR (status)) {
 		    Print (L"TCP configure: %r\r\n", status);
 		  }
 
-		status = Child->Configure (Child, &TcpConfigData);
+		//status = Child->Configure (Child, &TcpConfigData);
 
 		status = Child->GetModeData (Child,
 		                               NULL, NULL,
@@ -510,7 +550,7 @@ public:
 		
 		TCPConnectionAcceptInitialize();
 		
-		status =  uefi_call_wrapper(this->Child->Accept, 2, this->Child, &TCPConnectionAcceptToken);
+		status = uefi_call_wrapper(this->Child->Accept, 2, this->Child, &TCPConnectionAcceptToken);
 		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in accepting event: %d\r\n", status);

@@ -6,9 +6,7 @@
 #include <efinet.h>
 #include <efiprot.h>
 
-const UINTN MAX_PATH = 256;
-
-CHAR16 *szCurrentPath = new CHAR16[MAX_PATH];
+CHAR16 *szCurrentPath = NULL;
 
 EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileInterface = NULL;
 
