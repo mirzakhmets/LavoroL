@@ -83,7 +83,7 @@ extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
 		if (szBufferSize == MAX_BUFFER_SIZE - 1) {
 			szBuffer[szBufferSize] = (CHAR16) 0;
 			
-			Print(L"%s", szBuffer);
+			Print (L"%s", szBuffer);
 			
 			szBufferSize = 0;
 			
@@ -94,7 +94,7 @@ extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
 	if (szBufferSize) {
 		szBuffer[szBufferSize] = (CHAR16) 0;
 		
-		Print(L"%s", szBuffer);
+		Print (L"%s", szBuffer);
 		
 		szBufferSize =  0;
 		
@@ -268,7 +268,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 					if (szBufferSize == MAX_BUFFER_SIZE - 1) {
 						szBuffer[szBufferSize] = (CHAR16) 0;
 						
-						Print(L"%s", szBuffer);
+						Print (L"%s", szBuffer);
 						
 						szBufferSize = 0;
 						
@@ -279,7 +279,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 				if (szBufferSize) {
 					szBuffer[szBufferSize] = (CHAR16) 0;
 					
-					Print(L"%s\r\n", szBuffer);
+					Print (L"%s", szBuffer);
 					
 					szBufferSize = 0;
 					
@@ -308,7 +308,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			BS->WaitForEvent (1, WaitEventArray, &EventIndex);
 			
 			while (!TCPAcceptStatus) {
-  				
+  				DoEvents ();
 			}
 			
 			delete Socket;

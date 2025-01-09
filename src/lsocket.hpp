@@ -57,6 +57,8 @@ class LSocket;
 
 class LSocketReader : public LReader {
 protected:
+	UINTN BufferSize = 0;
+	
 	virtual bool ReadBuffer();
 	
 public:
@@ -171,6 +173,8 @@ public:
 	
 	LSocket (EFI_TCP4 *_Child, EFI_HANDLE _Handle) : Child (_Child), Handle (_Handle),
 		Reader(this), Writer(this) {
+		
+		Print (L"Socket created: %d, %d\r\n", Child, Handle);
 	}
 	
 	virtual ~LSocket() {
@@ -394,8 +398,12 @@ public:
 	
 	bool Receive(CHAR8* databuf, UINTN *databufLength) {
 		if (Child == NULL || this->Closed) {
+			*databufLength = 0;
+			
 			return false;
 		}
+		
+		UINTN InitialSize = *databufLength;
 		
 		ZeroMem(&rxdata, sizeof(rxdata));
     	ZeroMem(&iotoken, sizeof(iotoken));
@@ -406,6 +414,8 @@ public:
 			TPL_CALLBACK, (EFI_EVENT_NOTIFY) TCPCompletionTokenEvent, &TCPEventStatus, &iotoken.CompletionToken.Event);
 		
 		if (EFI_ERROR(status)) {
+			*databufLength = 0;
+			
 			Print(L"\r\nError in creating event: %d\r\n", status);
 			
 			return false;
@@ -419,6 +429,8 @@ public:
     	frag->FragmentBuffer = databuf;
     	frag->FragmentLength = *databufLength;
     	
+    	*databufLength = 0;
+    	
     	status = uefi_call_wrapper(this->Child->Receive, 2, this->Child, &iotoken);
     	
     	if (status == EFI_CONNECTION_FIN) {
@@ -430,6 +442,8 @@ public:
     		
     		return *databufLength;
 		} else if (EFI_ERROR(status)) {
+			*databufLength = 0;
+			
 			Print(L"\r\nError in receiving: %d\r\n", status);
 			
 			uefi_call_wrapper(BS->CloseEvent, 1, iotoken.CompletionToken.Event);
@@ -453,11 +467,23 @@ public:
 			DoEvents();
 			
 			if (EFI_ERROR(iotoken.CompletionToken.Status)) {
-				frag->FragmentLength = 0;
+				Print (L"Error completing: %d, %d\r\n", iotoken.CompletionToken.Status, frag->FragmentLength);
+				
+				if (frag->FragmentLength == InitialSize) {
+					frag->FragmentLength = 0;
+				}
+				
+				this->Closed = true;
 				
 				TCPCompletionTokenEventFinish();
 			} else if (++Counter > 1000000) {
-				frag->FragmentLength = 0;
+				Print (L"Error completing (2): %d, %d\r\n", iotoken.CompletionToken.Status, frag->FragmentLength);
+				
+				if (frag->FragmentLength == InitialSize) {
+					frag->FragmentLength = 0;
+				}
+				
+				this->Closed = true;
 				
 				TCPCompletionTokenEventFinish();
 			}
@@ -477,6 +503,8 @@ public:
 		
 		if (EFI_ERROR(status)) {
 			Print(L"\r\nError in closing event (3): %d\r\n", status);
+			
+			*databufLength = 0;
 			
 			return false;
 		}
@@ -588,7 +616,7 @@ public:
 
 bool LSocketReader::ReadBuffer() {
 	if (Socket && !this->AtEnd()) {
-		UINTN BufferSize = ReaderBufferSize - 16;
+		BufferSize = ReaderBufferSize - 32;
 		
 		if (!Socket->Receive(this->buffer, &BufferSize)) {
 			this->size = ~0U;
