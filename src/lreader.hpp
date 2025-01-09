@@ -5,7 +5,7 @@
 
 const int ReaderEof = -1;
 
-const int ReaderBufferSize = 32768;
+const int ReaderBufferSize = 66000;
 
 class LReader {
 protected:
