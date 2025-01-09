@@ -49,8 +49,8 @@ CHAR16 *szLine;
 CHAR16 *szBuffer;
 CHAR16 *szPath;
 
+UINTN LocalPort = 80;
 UINTN RemotePort = 80;
-UINTN LocalPort = 539;
 EFI_IPv4_ADDRESS RemoteAddress = { 0, 0, 0, 0 };
 EFI_IPv4_ADDRESS LocalAddress = { 192, 168, 3, 16 };
 			
