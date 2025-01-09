@@ -74,6 +74,8 @@ void FreeNetworkProtocol() {
 
 EFI_TCP4_LISTEN_TOKEN TCPConnectionAcceptToken;
 
+extern "C" int TCPAcceptStatus = 0;
+
 extern "C" void TCPAcceptConnection(EFI_TCP4 *, EFI_HANDLE);
 
 VOID EFIAPI TCPConnectionAccepted (EFI_EVENT Event, VOID *Context)
@@ -109,6 +111,8 @@ VOID EFIAPI TCPConnectionAccepted (EFI_EVENT Event, VOID *Context)
 	TCPAcceptConnection (Child, acceptToken->NewChildHandle);
 	
 	BS->CloseEvent (Event);
+	
+	TCPAcceptStatus = 1;
 }
 
 extern "C"

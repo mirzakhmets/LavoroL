@@ -92,7 +92,11 @@ extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
 	
 	Print (L"Received\r\n");
 	
+	Socket->Handle = NULL;
+	
 	delete Socket;
+	
+	Print (L"Received 2\r\n");
 }
 
 extern "C"
@@ -257,9 +261,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			delete Socket;
 		} else if (!StrnCmp(szLine, L"accept", 6)) {			
 			LSocket *Socket = new LSocket(&LocalAddress, 80);
-			
+
+  			TCPAcceptStatus = 0;
+  						
 			Socket->Accept();
-			
+  			
   			Print(L"\r\nPress any key to quit.\r\n");
 
 			EFI_EVENT                       WaitEventArray[1];
@@ -268,6 +274,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			WaitEventArray[0] = ST->ConIn->WaitForKey;
 			
 			BS->WaitForEvent (1, WaitEventArray, &EventIndex);
+			
+			while (!TCPAcceptStatus) {
+  				
+			}
 			
 			delete Socket;
 		}

@@ -35,6 +35,8 @@ extern "C" void TCPConnectionAcceptInitialize();
 
 extern VOID EFIAPI TCPConnectionAccepted (EFI_EVENT Event, VOID *Context);
 
+extern "C" int TCPAcceptStatus;
+
 extern "C" void InitializeNetworkProtocol();
 
 extern "C" void FreeNetworkProtocol();
@@ -91,9 +93,6 @@ extern "C" EFI_GUID Tcp4ServiceBindingProtocol;
 
 class LSocket {
 protected:
-	EFI_TCP4 *Child = NULL;
-	EFI_HANDLE Handle = NULL;
-
 	EFI_HANDLE ServiceBindingHandle = NULL;
 	EFI_SERVICE_BINDING *ServiceBinding = NULL;
 	
@@ -107,6 +106,9 @@ protected:
 public:
 	UINT16 Port;
 	EFI_IPv4_ADDRESS Address;
+
+	EFI_TCP4 *Child = NULL;
+	EFI_HANDLE Handle = NULL;
 	
 	LSocketReader Reader;
 	LSocketWriter Writer;
@@ -519,22 +521,26 @@ public:
 		                               NULL, NULL
 		                               );
 		        
-		        if (status == EFI_ACCESS_DENIED) {
-					Print (L"Access denied\r\n");
+		        //if (status == EFI_ACCESS_DENIED) {
+				//	Print (L"Access denied\r\n");
 					
-					return false;
-				} else if (EFI_ERROR (status)) {
-					break;
-				}
-
+				//	return false;
+				//} else if (EFI_ERROR (status)) {
+				//	break;
+				//}
 		    } while (!Ip4ModeData.IsConfigured);
-		    status = Child->Configure (Child, &TcpConfigData);
+		    
+			status = Child->Configure (Child, &TcpConfigData);
 		  } else if (EFI_ERROR (status)) {
 		    Print (L"TCP configure: %r\r\n", status);
 		  }
 
-		//status = Child->Configure (Child, &TcpConfigData);
-
+		if (status == EFI_ACCESS_DENIED) {
+			Print (L"Access denied\r\n");
+			
+			return false;
+		}
+		
 		status = Child->GetModeData (Child,
 		                               NULL, NULL,
 		                               &Ip4ModeData,
