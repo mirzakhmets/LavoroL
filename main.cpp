@@ -73,8 +73,10 @@ extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
 	while (!Socket->Reader.AtEnd()) {
 		Socket->Reader.Next();
 		
-		if (!Socket->Reader.AtEnd()) {
+		if (Socket->Reader.Current() != ReaderEof) {
 			szBuffer[szBufferSize++] = Socket->Reader.Current();
+		} else {
+			break;
 		}
 		
 		if (szBufferSize == MAX_BUFFER_SIZE - 1) {
@@ -98,13 +100,11 @@ extern "C" void TCPAcceptConnection(EFI_TCP4 *Child, EFI_HANDLE Handle) {
 		ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
 	}
 	
-	Print (L"Received\r\n");
-	
 	Socket->Handle = NULL;
 	
 	delete Socket;
 	
-	Print (L"Received 2\r\n");
+	Print (L"Received\r\n");
 }
 
 extern "C"
@@ -185,8 +185,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			while (!file->Reader.AtEnd()) {
 				file->Reader.Next();
 				
-				if (!file->Reader.AtEnd()) {
+				if (!file->Reader.Current() != ReaderEof) {
 					szBuffer[szBufferSize++] = file->Reader.Current();
+				} else {
+					break;
 				}
 				
 				if (szBufferSize == MAX_BUFFER_SIZE - 1) {
@@ -244,18 +246,22 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			
 			if (Socket->Connect(&RemoteAddress, RemotePort)) {
 				Socket->Writer.Write("GET / HTTP/1.0\r\n\r\n", 20);
-			
+				
 				Socket->Writer.Flush();
 				
 				szBufferSize = 0;
 				
 				ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
-
+				
+				Socket->Reader.SetText();
+				
 				while (!Socket->Reader.AtEnd()) {
 					Socket->Reader.Next();
 					
-					if (!Socket->Reader.AtEnd()) {
+					if (!Socket->Reader.Current() != ReaderEof) {
 						szBuffer[szBufferSize++] = Socket->Reader.Current();
+					} else {
+						break;
 					}
 					
 					if (szBufferSize == MAX_BUFFER_SIZE - 1) {
@@ -268,17 +274,18 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 						ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
 					}
 				}
+				
+				if (szBufferSize) {
+					szBuffer[szBufferSize] = (CHAR16) 0;
+					
+					Print(L"%s\r\n", szBuffer);
+					
+					szBufferSize = 0;
+					
+					ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
+				}
 			}
 			
-			if (szBufferSize) {
-				szBuffer[szBufferSize] = (CHAR16) 0;
-				
-				Print(L"%s\r\n", szBuffer);
-				
-				szBufferSize = 0;
-				
-				ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
-			}
 			
 			Print(L"\r\n");
 			
@@ -287,7 +294,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			LSocket *Socket = new LSocket(&LocalAddress, 80);
 
   			TCPAcceptStatus = 0;
-  						
+  			
 			Socket->Accept();
   			
   			Print(L"\r\nPress any key to quit.\r\n");

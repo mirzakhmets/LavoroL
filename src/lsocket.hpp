@@ -185,6 +185,10 @@ public:
 			uefi_call_wrapper(BS->CloseProtocol, 4, ServiceBindingHandle, &Tcp4ServiceBindingProtocol,
 				gImageHandle, ServiceBindingHandle);
 		}
+		
+		if (Child) {
+			Child->Close(Child, NULL);
+		}
 	}
 	
 	bool Connect(EFI_IPv4_ADDRESS *gRemoteAddress, UINT16 gRemotePort) {
@@ -570,7 +574,7 @@ public:
 
 bool LSocketReader::ReadBuffer() {
 	if (Socket && !this->AtEnd()) {
-		UINTN BufferSize = ReaderBufferSize - 1;
+		UINTN BufferSize = ReaderBufferSize - 16;
 		
 		if (!Socket->Receive(this->buffer, &BufferSize)) {
 			this->size = ~0U;

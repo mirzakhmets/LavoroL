@@ -9,6 +9,7 @@ const int ReaderBufferSize = 32768;
 
 class LReader {
 protected:
+	bool IsText = false;
 	unsigned long size = 0;
 	unsigned long current = 0;
 	
@@ -24,12 +25,22 @@ public:
 	~LReader() {
 	}
 	
+	void SetText() {
+		this->IsText = true;
+	}
+	
 	bool AtEnd() {
 		return size == ~0U;
 	}
 	
 	int Current() {
 		if (this->AtEnd()) {
+			return ReaderEof;
+		}
+		
+		if (this->IsText && !this->buffer[current]) {
+			this->size = ~0U;
+			
 			return ReaderEof;
 		}
 		
