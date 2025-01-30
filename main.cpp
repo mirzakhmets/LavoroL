@@ -6,6 +6,7 @@ const unsigned MAX_BUFFER_SIZE = 256;
 #ifdef _TEST_
 
 #include <windows.h>
+#include <wingdi.h>
 #include <cstdio>
 #include <cstdlib>
 
@@ -63,6 +64,8 @@ extern EFI_GUID GraphicsOutputProtocol;
 
 #include <lfs.hpp>
 #include <lfile.hpp>
+#include <lscreen.hpp>
+#include <lbitmap.hpp>
 
 UINTN szBufferSize = 0;
 CHAR16 *szLine;
@@ -73,6 +76,8 @@ UINTN LocalPort = 80;
 UINTN RemotePort = 80;
 EFI_IPv4_ADDRESS RemoteAddress = { 0, 0, 0, 0 };
 EFI_IPv4_ADDRESS LocalAddress = { 192, 168, 3, 16 };
+
+LScreen* MainScreen = NULL;
 			
 extern "C" int Box_Main();
 
@@ -533,6 +538,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 		}
 		
+		case WM_PAINT: {
+			MainScreen->Paint();
+			break;
+		}
+		
 		/* All other messages (a lot of them) are processed using default procedures */
 		default:
 			return DefWindowProc(hwnd, Message, wParam, lParam);
@@ -619,7 +629,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		640, /* width */
 		480, /* height */
 		NULL,NULL,hInstance,NULL);
-
+	
+	printf ("t1\n");
+	MainScreen = new LBitmap(L"./assets/fonts/font-1-1.bmp");
+	printf ("t2\n");
+	MainScreen->Handle = hwnd;
+	printf ("t3\n");
+	
 	if(hwnd == NULL) {
 		MessageBox(NULL, "Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
 		return 0;
