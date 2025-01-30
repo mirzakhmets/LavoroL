@@ -1,0 +1,4 @@
+Times New Roman
+font-1-1,ABCDEFGHIJKLMNOPQRSTUVWXYZ
+font-1-2,abcdefghijklmnopqrstuvwxyz0123456789
+font-1-3,`~!@#$%^&*()-_=+[]{}\|;':",.<>/?
