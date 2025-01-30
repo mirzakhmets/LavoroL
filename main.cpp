@@ -6,6 +6,10 @@ const unsigned MAX_BUFFER_SIZE = 256;
 #ifdef _TEST_
 
 #include <windows.h>
+#include <cstdio>
+#include <cstdlib>
+
+using namespace std;
 
 #undef BOOLEAN
 
@@ -516,10 +520,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 }
 
 #ifdef _TEST_
-#include <cstdio>
-#include <cstdlib>
-
-using namespace std;
 
 /* This is where all the input to the window goes to */
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
