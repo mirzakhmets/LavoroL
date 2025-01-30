@@ -539,7 +539,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		
 		case WM_PAINT: {
-			MainScreen->Paint();
+			if (MainScreen) {
+				MainScreen->Paint();
+			}
 			break;
 		}
 		
@@ -630,11 +632,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		480, /* height */
 		NULL,NULL,hInstance,NULL);
 	
-	printf ("t1\n");
 	MainScreen = new LBitmap(L"./assets/fonts/font-1-1.bmp");
-	printf ("t2\n");
 	MainScreen->Handle = hwnd;
-	printf ("t3\n");
 	
 	if(hwnd == NULL) {
 		MessageBox(NULL, "Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);

@@ -26,6 +26,10 @@ public:
 		this->current = 0;
 	}
 	
+	void Reset() {
+		this->current = 0;
+	}
+	
 	void Write(const unsigned char ch) {
 		if (current == sizeof(buffer)) {
 			this->Flush();

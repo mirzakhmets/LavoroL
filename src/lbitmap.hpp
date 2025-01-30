@@ -6,6 +6,8 @@
 #include <lfile.hpp>
 #include <lscreen.hpp>
 
+#pragma pack (1)
+
 typedef struct _WinBMPFileHeader
 {
 	unsigned short FileType; /* File type, always 4D42h ("BM") */
@@ -18,8 +20,8 @@ typedef struct _WinBMPFileHeader
 typedef struct _Win2xBitmapHeader
 {
 	unsigned int Size; /* Size of this header in bytes */
-	unsigned short Width; /* Image width in pixels */
-	unsigned short Height; /* Image height in pixels */
+	unsigned int Width; /* Image width in pixels */
+	unsigned int Height; /* Image height in pixels */
 	unsigned short Planes; /* Number of color planes */
 	unsigned short BitsPerPixel; /* Number of bits per pixel */
 } WIN2XBITMAPHEADER;
@@ -37,25 +39,33 @@ public:
 	WIN2XBITMAPHEADER BitmapHeader;
 	
 	LBitmap (const CHAR16 *FileName) : LScreen (0, 0, 0, 0) {
-		printf ("ee1\n");
-		
 		LFile bitmap(FileName, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 		
+		bitmap.Reader.Next();
+		
 		bitmap.Reader.Read(&Header, sizeof (Header));
+		
+		#ifdef _TEST_
+		printf ("Header: %08x %d, %d %d, offset %d\n", (int)Header.FileType, (int)Header.FileSize, (int)Header.Reserved1, (int)Header.Reserved2, (int)Header.BitmapOffset);
+		#endif
+		
 		bitmap.Reader.Read(&BitmapHeader, sizeof (BitmapHeader));
 		
 		this->W = BitmapHeader.Width;
 		this->H = BitmapHeader.Height;
 		
-		printf ("zz %d %d\n", W, H);
+		#ifdef _TEST_
+		printf ("Bitmap header: W = %d, H = %d\n", W, H);
+		#endif
 		
 		this->Buffer = new unsigned[this->W * this->H];
 		
 		bitmap.SetPosition(Header.BitmapOffset);
+		bitmap.Reader.Next();
 		
-		unsigned k = 0;
-		
-		for (unsigned i = 0; i < H; ++i) {
+		for (int i = H - 1; i >= 0; --i) {
+			unsigned k = i * W;
+			
 			for (unsigned j = 0; j < W; ++j, ++k) {
 				this->Buffer[k] = 0;
 				

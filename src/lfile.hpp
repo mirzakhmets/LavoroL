@@ -143,7 +143,7 @@ public:
 		return ftell (FileHandle);
 		#else
 		UINT64 result = InvalidPosition;
-				
+		
 		if (Handle) {
 			EFI_STATUS status = uefi_call_wrapper (Handle->GetPosition, 2, Handle, &result);
 			
@@ -159,6 +159,10 @@ public:
 	}
 	
 	void SetPosition (UINT64 _Position) {
+		this->Reader.Reset();
+		this->Writer.Flush();
+		this->Writer.Reset();
+
 		#ifdef _TEST_
 		fsetpos (FileHandle, &_Position);
 		#else
@@ -169,7 +173,7 @@ public:
 				Print (L"\r\nError getting file position: %d\r\n", status);
 			}
 		}
-		#endif
+		#endif		
 	}
 };
 
@@ -207,7 +211,9 @@ bool LFileReader::ReadBuffer() {
 
 void LFileWriter::WriteBuffer() {
 	#ifdef _TEST_
-	fwrite (this->buffer, 1, this->current, this->File->FileHandle);
+	if (this->current) {
+		fwrite (this->buffer, 1, this->current, this->File->FileHandle);
+	}
 	#else
 	if (File && this->current) {
 		UINTN BufferSize = this->current;

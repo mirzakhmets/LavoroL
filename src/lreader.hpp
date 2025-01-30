@@ -25,6 +25,10 @@ public:
 	~LReader() {
 	}
 	
+	void Reset() {
+		this->current = this->size = 0;
+	}
+	
 	void SetText() {
 		this->IsText = true;
 	}

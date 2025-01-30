@@ -50,11 +50,11 @@ public:
 			if (hdc) {
 				unsigned k = 0;
 				
-				for (unsigned i = 0; i < W; ++i) {
-					for (unsigned j = 0; j < H; ++j, ++k) {
+				for (unsigned i = 0; i < H; ++i) {
+					for (unsigned j = 0; j < W; ++j, ++k) {
 						COLORREF color = RGB((this->Buffer[k] >> 16) & 0xff, (this->Buffer[k] >> 8) & 0xff, this->Buffer[k] & 0xff);
 						
-						SetPixel (hdc, X + i, Y + j, color);
+						SetPixel (hdc, X + j, Y + i, color);
 					}
 				}
 				
