@@ -22,12 +22,30 @@ Revision History
 
 #if !defined(__cplusplus)
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+
+#ifdef _TEST_
+#define BOOLEAN _Bool
+#else
 typedef _Bool BOOLEAN;
+#endif
+
+#else
+
+#ifdef _TEST_
+#define BOOLEAN unsigned char
 #else
 typedef unsigned char BOOLEAN;
 #endif
+
+#endif
+#else
+
+#ifdef _TEST_
+#define BOOLEAN bool
 #else
 typedef bool BOOLEAN;
+#endif
+
 #endif
 
 #ifndef CONST
