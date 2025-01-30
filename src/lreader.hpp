@@ -72,6 +72,19 @@ public:
 		
 		return this->Current();
 	}
+	
+	unsigned Read (void *Buffer, unsigned BufferSize) {
+		unsigned result = 0;
+		char *CharBuffer = (char *) Buffer;
+		
+		for (; !this->AtEnd() && BufferSize; --BufferSize, ++CharBuffer, ++result) {
+			*CharBuffer = (char) this->Current();
+			
+			this->Next();
+		}
+		
+		return result;
+	}
 };
 
 #endif

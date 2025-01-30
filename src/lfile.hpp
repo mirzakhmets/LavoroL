@@ -8,6 +8,14 @@
 #include <lreader.hpp>
 #include <lwriter.hpp>
 
+#ifdef _TEST_
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+using namespace std;
+#endif
+
 const UINT64 InvalidPosition = ~0;
 
 class LFile;
@@ -47,7 +55,35 @@ public:
 	
 	EFI_FILE* Handle = NULL;
 	
+	#ifdef _TEST_
+	FILE *FileHandle = NULL;
+	char FileName[MAX_PATH], FileMode[MAX_PATH];
+	#endif
+	
 	LFile(const CHAR16 *Path, EFI_FILE *_Handle, UINT64 Mode, UINT64 Attributes) : Handle (_Handle), Reader (this), Writer (this) {
+		#ifdef _TEST_
+		int i;
+		
+		for (i = 0; Path[i]; ++i) {
+			FileName[i] = Path[i];
+		}
+		
+		FileName[i] = '\0';
+		
+		FileMode[0] = '\0';
+		
+		if (Mode & EFI_FILE_MODE_READ) {
+			strcat (FileMode, "r");
+		}
+
+		if (Mode & EFI_FILE_MODE_WRITE) {
+			strcat (FileMode, "w");
+		}
+		
+		strcat (FileMode, "b");
+		
+		this->FileHandle = fopen (FileName, FileMode);
+		#else
 		if (!Handle && StrLen(Path) > 0) {
 			EFI_FILE *Volume = NULL;
 			
@@ -69,17 +105,27 @@ public:
 				Volume = NULL;
 			}
 		}
+		#endif
 	}
 	
 	virtual ~LFile() {
+		#ifdef _TEST_
+		if (FileHandle) {
+			fclose (FileHandle);
+		}
+		#else
 		if (Handle) {
 			uefi_call_wrapper(Handle->Close, 1, Handle);
 			
 			Handle = NULL;
 		}
+		#endif
 	}
 	
 	void Delete() {
+		#ifdef _TEST_
+		remove (FileName);
+		#else
 		if (Handle) {
 			EFI_STATUS status = uefi_call_wrapper (Handle->Delete, 1, Handle);
 			
@@ -89,11 +135,15 @@ public:
 				Handle = NULL;
 			}
 		}
+		#endif
 	}
 	
 	UINT64 Position() {
+		#ifdef _TEST_
+		return ftell (FileHandle);
+		#else
 		UINT64 result = InvalidPosition;
-					
+				
 		if (Handle) {
 			EFI_STATUS status = uefi_call_wrapper (Handle->GetPosition, 2, Handle, &result);
 			
@@ -105,9 +155,13 @@ public:
 		}
 		
 		return result;
+		#endif
 	}
 	
 	void SetPosition (UINT64 _Position) {
+		#ifdef _TEST_
+		fsetpos (FileHandle, &_Position);
+		#else
 		if (Handle) {
 			EFI_STATUS status = uefi_call_wrapper (Handle->SetPosition, 2, Handle, _Position);
 			
@@ -115,10 +169,20 @@ public:
 				Print (L"\r\nError getting file position: %d\r\n", status);
 			}
 		}
-	}	
+		#endif
+	}
 };
 
 bool LFileReader::ReadBuffer() {
+	#ifdef _TEST_
+	if (File->FileHandle && !this->AtEnd()) {
+		this->current = 0;
+		
+		this->size = fread (this->buffer, 1, sizeof (this->buffer) - 1, File->FileHandle);
+		
+		return this->current != this->size;
+	}
+	#else
 	if (File && !this->AtEnd()) {
 		UINTN BufferSize = sizeof (this->buffer) - 1;
 		
@@ -136,11 +200,15 @@ bool LFileReader::ReadBuffer() {
 		
 		return this->current != this->size;
 	}
+	#endif
 	
 	return false;
 }
 
 void LFileWriter::WriteBuffer() {
+	#ifdef _TEST_
+	fwrite (this->buffer, 1, this->current, this->File->FileHandle);
+	#else
 	if (File && this->current) {
 		UINTN BufferSize = this->current;
 		
@@ -150,6 +218,7 @@ void LFileWriter::WriteBuffer() {
 			Print(L"\r\nError in reading file: %d\r\n", status);
 		}
 	}
+	#endif
 }
 
 #endif

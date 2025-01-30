@@ -26,6 +26,7 @@ typedef _LIST_ENTRY EFI_LIST_ENTRY;
 #include <efinet.h>
 #include <efiprot.h>
 
+#ifndef _TEST_
 extern "C" void * operator new (unsigned long size) {
 	return (void*) AllocatePool ((UINTN) size);
 }
@@ -50,6 +51,7 @@ extern "C" void operator delete (void *buffer, unsigned long size) {
 
 extern "C" void __cxa_throw_bad_array_new_length() {
 }
+#endif
 
 extern EFI_GUID GraphicsOutputProtocol;
 
@@ -538,8 +540,57 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	return 0;
 }
 
+void testFiles() {
+	LFile* file = new LFile(L"./assets/filetest.txt", NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+	
+	szBufferSize = 0;
+	
+	ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
+	
+	while (!file->Reader.AtEnd()) {
+		file->Reader.Next();
+		
+		if (file->Reader.Current() != ReaderEof) {
+			szBuffer[szBufferSize++] = file->Reader.Current();
+		} else {
+			break;
+		}
+		
+		if (szBufferSize == MAX_BUFFER_SIZE - 1) {
+			szBuffer[szBufferSize] = (CHAR16) 0;
+			
+			printf ("%ls", szBuffer);
+			
+			szBufferSize = 0;
+			
+			ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
+		}
+	}
+	
+	if (szBufferSize) {
+		szBuffer[szBufferSize] = (CHAR16) 0;
+		
+		printf ("%ls", szBuffer);
+		
+		szBufferSize = 0;
+		
+		ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
+	}
+	
+	printf ("\r\n");
+	
+	delete file;
+}
+
 /* The 'main' function of Win32 GUI programs: this is where execution starts */
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+	szLine = new CHAR16[MAX_PATH];
+	szPath = new CHAR16[MAX_PATH];
+	szBuffer = new CHAR16[MAX_BUFFER_SIZE];
+	szCurrentPath = new CHAR16[MAX_PATH];
+	
+	testFiles();
+	
 	WNDCLASSEX wc; /* A properties struct of our window */
 	HWND hwnd; /* A 'HANDLE', hence the H, or a pointer to our window */
 	MSG msg; /* A temporary location for all messages */
