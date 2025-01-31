@@ -18,7 +18,13 @@ extern "C" void LoadFonts() {
 		Fonts[i] = NULL;
 	}
 	
-	LFile fonts (L".\\assets\\fonts\\fonts.txt", NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+	LFile fonts (
+		#ifdef _TEST_
+		L".\\assets\\fonts\\fonts.txt",
+		#else
+		L"\\assets\\fonts\\fonts.txt",
+		#endif
+		NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 	
 	fonts.Reader.Next();
 	
@@ -30,7 +36,13 @@ extern "C" void LoadFonts() {
 		if (szLine[0]) {
 			CHAR16 szPath[MAX_PATH];
 			
-			StrCpy (szPath, L".\\assets\\fonts\\");
+			StrCpy (szPath,
+				#ifdef _TEST_
+				L".\\assets\\fonts\\"
+				#else
+				L"\\assets\\fonts\\"
+				#endif
+				);
 			
 			StrCat (szPath, szLine);
 			

@@ -50,8 +50,6 @@ extern "C" void __cxa_throw_bad_array_new_length() {
 }
 #endif
 
-extern EFI_GUID GraphicsOutputProtocol;
-
 #include <ltask.hpp>
 #include <lsocket.hpp>
 
@@ -73,8 +71,6 @@ UINTN LocalPort = 80;
 UINTN RemotePort = 80;
 EFI_IPv4_ADDRESS RemoteAddress = { 0, 0, 0, 0 };
 EFI_IPv4_ADDRESS LocalAddress = { 192, 168, 3, 16 };
-
-LScreen* MainScreen = NULL;
 			
 extern "C" int Box_Main();
 
@@ -141,7 +137,7 @@ fill_boxes(UINT32 *PixelBuffer, UINT32 Width, UINT32 Height)
 	EFI_GRAPHICS_OUTPUT_BLT_PIXEL Red = {0, 0, 0xff, 0},
 				      Green = {0, 0xff, 0, 0},
 				      *Color;
-
+	
 	for (y = 0; y < Height; y++) {
 		Color = ((y / 32) % 2 == 0) ? &Red : &Green;
 		for (x = 0; x < Width; x++) {
@@ -281,26 +277,9 @@ print_modes(EFI_GRAPHICS_OUTPUT_PROTOCOL *gop)
 	}
 }
 
-extern "C"
-EFI_STATUS
-EFIAPI
-efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
-{
-	InitializeLib(ImageHandle, SystemTable);
-
-	szLine = new CHAR16[MAX_PATH];
-	szPath = new CHAR16[MAX_PATH];
-	szBuffer = new CHAR16[MAX_BUFFER_SIZE];
-	szCurrentPath = new CHAR16[MAX_PATH];
-
+void ConsoleMode() {
 	Print(L"Welcome to LavoroL!\r\n");
-
-	gImageHandle = ImageHandle;
 	
-	InitializeFileSystem();
-	
-	TCPEventStatus = 0;
-
 	while (true) {
 		Input(L"\r\n$>> ", szLine, MAX_PATH);
 		
@@ -519,7 +498,53 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 			print_modes(gop);
 		}
 	}
+}
+
+bool ScreenMode() {
+	InitializeGraphics();
+	
+	MainScreen->Fill(0xFBF3FF);
+	
+	while (true) {
+		MainScreen->Paint();
 		
+		EFI_INPUT_KEY Key;
+    	EFI_STATUS Status;
+    	
+    	WaitForSingleEvent (ConIn->WaitForKey, 0);
+		
+        Status = uefi_call_wrapper(ConIn->ReadKeyStroke, 2, ConIn, &Key);
+        
+        
+	}
+	
+	return true;
+}
+
+extern "C"
+EFI_STATUS
+EFIAPI
+efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
+{
+	InitializeLib(ImageHandle, SystemTable);
+
+	szLine = new CHAR16[MAX_PATH];
+	szPath = new CHAR16[MAX_PATH];
+	szBuffer = new CHAR16[MAX_BUFFER_SIZE];
+	szCurrentPath = new CHAR16[MAX_PATH];
+
+	gImageHandle = ImageHandle;
+	
+	InitializeFileSystem();
+	
+	TCPEventStatus = 0;
+
+	#ifdef SCREEN_MODE
+		ScreenMode();
+	#endif
+	
+	ConsoleMode();
+	
 	return EFI_SUCCESS;
 }
 

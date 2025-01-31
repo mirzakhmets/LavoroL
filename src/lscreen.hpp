@@ -7,6 +7,19 @@
 #include <windows.h>
 #endif
 
+#include <efi.h>
+#include <efilib.h>
+
+class LScreen;
+
+extern "C" LScreen *MainScreen;
+
+extern "C" EFI_GUID GraphicsOutputProtocol;
+
+extern "C" EFI_GRAPHICS_OUTPUT_PROTOCOL *GOP;
+
+extern "C" void InitializeGraphics();
+
 class LScreen {
 public:
 	#ifdef _TEST_
@@ -77,6 +90,19 @@ public:
 				DeleteDC (hdc);
 			}
 		}
+		#else
+		if (GOP) {
+			uefi_call_wrapper(GOP->Blt, 10, GOP,
+				  (EFI_GRAPHICS_OUTPUT_BLT_PIXEL*) this->Buffer,
+				  EfiBltBufferToVideo,
+				  0,
+				  0,
+				  this->X,
+				  this->Y,
+				  this->W,
+				  this->H,
+				  0);
+		}
 		#endif
 	}
 	
@@ -96,6 +122,31 @@ public:
 		for (unsigned i = 0; i < k; ++i) {
 			Buffer[i] = Color;
 		}
+	}
+		
+	LScreen* Scale (int Ratio) {
+		LScreen *result = new LScreen(X, Y, (W * Ratio + 100 - 1) / 100, (H * Ratio + 100 - 1) / 100);
+		
+		result->HasMask = this->HasMask;
+		result->EmptyColor = this->EmptyColor;
+		
+		for (unsigned i = 0; i < H; ++i) {
+			for (unsigned j = 0; j < W; ++j) {
+				if (result->HasMask) {
+					result->SetBuffer((j * Ratio + 100 - 1) / 100, (i * Ratio + 100 - 1) / 100, EmptyColor);
+				}
+			}
+		}
+		
+		for (unsigned i = 0; i < H; ++i) {
+			for (unsigned j = 0; j < W; ++j) {
+				if (GetBuffer(j, i) != EmptyColor || !this->HasMask) {
+					result->SetBuffer((j * Ratio + 100 - 1) / 100, (i * Ratio + 100 - 1) / 100, GetBuffer(j, i));
+				}
+			}
+		}
+		
+		return result;
 	}
 };
 

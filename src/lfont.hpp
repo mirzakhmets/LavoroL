@@ -205,7 +205,7 @@ public:
 			
 			int OffsetY = ((CharHeight - c->H) * FontSize) / CharHeight;
 			
-			c = c->Resize(ratio);
+			c = c->Scale(ratio);
 			
 			if ((currentX + c->W) >= Screen->W) {
 				currentX = 0;

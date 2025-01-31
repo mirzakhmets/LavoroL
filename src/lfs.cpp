@@ -18,6 +18,7 @@ void InitializeFileSystem() {
 		Print(L"\r\nError in loading file interface: %d\r\n", status);
 	}
 	
+	#ifndef SCREEN_MODE
 	EFI_FILE *file;
 	
 	status = uefi_call_wrapper(FileInterface->OpenVolume, 2, FileInterface, &file);
@@ -32,6 +33,7 @@ void InitializeFileSystem() {
 			Print(L"Volume label: %s\r\n", info->VolumeLabel);
 		}
 	}
+	#endif
 	
 	StrCpy(szCurrentPath, L"\\");
 }
