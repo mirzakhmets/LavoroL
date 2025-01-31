@@ -35,10 +35,13 @@ typedef struct _Win2xPaletteElement
 
 class LBitmap : public LScreen {
 public:
-	WINBMPFILEHEADER Header;
-	WIN2XBITMAPHEADER BitmapHeader;
+	LBitmap (int _X, int _Y, int _W, int _H) : LScreen (_X, _Y, _W, _H) {
+	}
 	
 	LBitmap (const CHAR16 *FileName) : LScreen (0, 0, 0, 0) {
+		WINBMPFILEHEADER Header;
+		WIN2XBITMAPHEADER BitmapHeader;
+		
 		LFile bitmap(FileName, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 		
 		bitmap.Reader.Next();
@@ -75,6 +78,22 @@ public:
 	}
 	
 	virtual ~LBitmap() {
+	}
+	
+	LBitmap *Resize (int Ratio) {
+		LBitmap *result = new LBitmap(X, Y, (W * Ratio + 100 - 1) / 100, (H * Ratio + 100 - 1) / 100);
+		
+		result->EmptyColor = this->EmptyColor;
+		
+		for (unsigned i = 0; i < H; ++i) {
+			for (unsigned j = 0; j < W; ++j) {
+				if (GetBuffer(j, i) != EmptyColor || !this->HasMask) {
+					result->SetBuffer((j * Ratio + 100 - 1) / 100, (i * Ratio + 100 - 1) / 100, GetBuffer(j, i));
+				}
+			}
+		}
+		
+		return result;
 	}
 };
 

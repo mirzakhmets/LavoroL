@@ -15,6 +15,8 @@ public:
 	
 	int X = 0, Y = 0;
 	int W = 0, H = 0;
+	int EmptyColor = -1;
+	bool HasMask = false;
 	
 	bool Visible = false;
 	LScreen *Parent = NULL;
@@ -23,6 +25,12 @@ public:
 	LScreen (int _X, int _Y, int _W, int _H) : X(_X), Y(_Y), W(_W), H(_H) {
 		if (W * H) {
 			Buffer = new unsigned [W * H];
+			
+			unsigned k = W * H;
+			
+			for (unsigned i = 0; i < k; ++i) {
+				Buffer[i] = 0;
+			}
 		}
 	}
 	
@@ -58,7 +66,9 @@ public:
 					for (unsigned j = 0; j < W; ++j, ++k) {
 						COLORREF color = RGB((this->Buffer[k] >> 16) & 0xff, (this->Buffer[k] >> 8) & 0xff, this->Buffer[k] & 0xff);
 						
-						SetPixel (hdc, X + j, Y + i, color);
+						if (this->Buffer[k] != EmptyColor || !this->HasMask) {
+							SetPixel (hdc, X + j, Y + i, color);
+						}
 					}
 				}
 				
@@ -68,6 +78,22 @@ public:
 			}
 		}
 		#endif
+	}
+	
+	unsigned GetBuffer (int x, int y) {
+		return Buffer[y * W + x];
+	}
+	
+	void SetBuffer (int x, int y, int value) {
+		Buffer[y * W + x] = value;
+	}
+	
+	void Fill(int Color) {
+		unsigned k = W * H;
+		
+		for (unsigned i = 0; i < k; ++i) {
+			Buffer[i] = Color;
+		}
 	}
 };
 

@@ -631,8 +631,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		480, /* height */
 		NULL,NULL,hInstance,NULL);
 	
-	MainScreen = new LBitmap(L"./assets/fonts/font-1-1.bmp");
+	//MainScreen = new LBitmap(L"./assets/fonts/font-1-1.bmp");
+	MainScreen = new LScreen (0, 0, 640, 480);
+
+	MainScreen->Fill(0xffffff);
+
 	MainScreen->Handle = hwnd;
+		
+	CHAR16 *szText = L"Hello, LavoroL! I would like to express my gratitude to you";
+	
+	GetFont(L"Times New Roman")->DrawText(MainScreen, 64, szText, StrLen(szText));
 	
 	if(hwnd == NULL) {
 		MessageBox(NULL, "Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
