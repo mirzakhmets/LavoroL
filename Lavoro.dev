@@ -11,7 +11,7 @@ ResourceIncludes=
 MakeIncludes=
 Compiler=
 CppCompiler=-fpic_@@_-ffreestanding_@@_-fno-stack-protector_@@_-fno-stack-check_@@_-fshort-wchar_@@_-mno-red-zone_@@_-mno-avx_@@_-fPIE_@@_-g_@@_-O2_@@_-funsigned-char_@@_-fno-strict-aliasing_@@_-fno-stack-check_@@_-fno-merge-all-constants_@@_-maccumulate-outgoing-args_@@_-DCONFIG_X86_64_@@_-DGNU_EFI_USE_MS_ABI_@@_-fpermissive_@@_-fno-exceptions_@@_-fno-rtti_@@_-D_TEST__@@_
-Linker=-e WinMain_@@_
+Linker=-e WinMain_@@_-lgdi32_@@_
 IsCpp=1
 Icon=
 ExeOutput=
@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;2;0;0;0
-UnitCount=113
+UnitCount=115
 
 [VersionInfo]
 Major=1
@@ -800,9 +800,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit116]
-FileName=src\gnu-efi-3.0.18\lib\print.c
+FileName=src\lbitmap.hpp
 CompileCpp=1
-Folder=lib
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -1376,6 +1376,26 @@ BuildCmd=
 FileName=src\gnu-efi-3.0.18\inc\efidevp.h
 CompileCpp=1
 Folder=inc
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit115]
+FileName=src\lbitmap.hpp
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit114]
+FileName=src\lscreen.hpp
+CompileCpp=1
+Folder=
 Compile=1
 Link=1
 Priority=1000

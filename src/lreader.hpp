@@ -3,6 +3,8 @@
 
 #define _L_READER_
 
+#include <lfs.hpp>
+
 const int ReaderEof = -1;
 
 const unsigned long ReaderBufferSize = 66000;
@@ -88,6 +90,30 @@ public:
 		}
 		
 		return result;
+	}
+	
+	unsigned ReadLine (CHAR16 *Buffer) {
+		CHAR16 *CharBuffer = (CHAR16 *) Buffer;
+		
+		for (; !this->AtEnd(); ++CharBuffer) {
+			if (this->Current() == L'\n') {
+				this->Next();
+				
+				break;
+			}
+			
+			*CharBuffer = (CHAR16) this->Current();
+			
+			this->Next();
+		}
+		
+		if (*(CharBuffer - 1) == L'\r') {
+			--CharBuffer;
+		}
+		
+		*CharBuffer = L'\0';
+		
+		return CharBuffer - Buffer;
 	}
 };
 

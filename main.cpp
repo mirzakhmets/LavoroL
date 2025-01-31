@@ -1,8 +1,4 @@
 
-const unsigned MAX_PATH = 256;
-
-const unsigned MAX_BUFFER_SIZE = 256;
-
 #ifdef _TEST_
 
 #include <windows.h>
@@ -66,6 +62,7 @@ extern EFI_GUID GraphicsOutputProtocol;
 #include <lfile.hpp>
 #include <lscreen.hpp>
 #include <lbitmap.hpp>
+#include <lfont.hpp>
 
 UINTN szBufferSize = 0;
 CHAR16 *szLine;

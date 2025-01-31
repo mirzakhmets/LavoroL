@@ -3,6 +3,10 @@
 
 #define _L_SCREEN_
 
+#ifdef _TEST_
+#include <windows.h>
+#endif
+
 class LScreen {
 public:
 	#ifdef _TEST_

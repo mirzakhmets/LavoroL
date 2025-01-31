@@ -74,7 +74,7 @@ CursorRow=176
 TopLine=154
 LeftChar=1
 [Editors]
-Order=99,41,66,26,21,29,36,45,30
+Order=
 Focused=-1
 [Editor_0]
 CursorCol=3
