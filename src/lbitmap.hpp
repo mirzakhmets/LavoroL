@@ -83,7 +83,16 @@ public:
 	LBitmap *Resize (int Ratio) {
 		LBitmap *result = new LBitmap(X, Y, (W * Ratio + 100 - 1) / 100, (H * Ratio + 100 - 1) / 100);
 		
+		result->HasMask = this->HasMask;
 		result->EmptyColor = this->EmptyColor;
+
+		for (unsigned i = 0; i < H; ++i) {
+			for (unsigned j = 0; j < W; ++j) {
+				if (result->HasMask) {
+					result->SetBuffer((j * Ratio + 100 - 1) / 100, (i * Ratio + 100 - 1) / 100, EmptyColor);
+				}
+			}
+		}
 		
 		for (unsigned i = 0; i < H; ++i) {
 			for (unsigned j = 0; j < W; ++j) {

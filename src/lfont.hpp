@@ -134,7 +134,8 @@ public:
 				#endif
 				
 				LBitmap *CharBitmap = new LBitmap(0, 0, j - startscan, maxHeight - minHeight);
-				
+
+				CharBitmap->HasMask = true;				
 				CharBitmap->EmptyColor = EmptyColor;
 				
 				for (unsigned x = startscan; x < j; ++x) {
@@ -213,18 +214,16 @@ public:
 			}
 			
 			for (unsigned x = 0; x < c->W; ++x) {
-				for (unsigned y = 0; y < c->H; ++y) {
-					Screen->SetBuffer(currentX + x, currentY + y, this->FontEmptyColor);
-				}
-			}
-			
-			for (unsigned x = 0; x < c->W; ++x) {
 				for (unsigned y = OffsetY; y < c->H; ++y) {
-					Screen->SetBuffer(currentX + x, currentY + y, c->GetBuffer(x, y));
+					if (c->GetBuffer(x, y) != FontEmptyColor) {
+						Screen->SetBuffer(currentX + x, currentY + y, c->GetBuffer(x, y));
+					}
 				}
 			}
 			
 			currentX += c->W;
+			
+			delete c;
 		}
 	}
 };

@@ -634,7 +634,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//MainScreen = new LBitmap(L"./assets/fonts/font-1-1.bmp");
 	MainScreen = new LScreen (0, 0, 640, 480);
 
-	MainScreen->Fill(0xffffff);
+	MainScreen->Fill(0x00ff00);
 
 	MainScreen->Handle = hwnd;
 	
