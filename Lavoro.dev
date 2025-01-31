@@ -9,9 +9,9 @@ Libs=C:\Users\mirza\Documents\GitHub\LavoroL\src;C:\Users\mirza\Documents\GitHub
 PrivateResource=
 ResourceIncludes=
 MakeIncludes=
-Compiler=
+Compiler=-D_TEST__@@_
 CppCompiler=-fpic_@@_-ffreestanding_@@_-fno-stack-protector_@@_-fno-stack-check_@@_-fshort-wchar_@@_-mno-red-zone_@@_-mno-avx_@@_-fPIE_@@_-g_@@_-O2_@@_-funsigned-char_@@_-fno-strict-aliasing_@@_-fno-stack-check_@@_-fno-merge-all-constants_@@_-maccumulate-outgoing-args_@@_-DCONFIG_X86_64_@@_-DGNU_EFI_USE_MS_ABI_@@_-fpermissive_@@_-fno-exceptions_@@_-fno-rtti_@@_-D_TEST__@@_
-Linker=-e WinMain_@@_-lgdi32_@@_
+Linker=-D_TEST__@@_-e WinMain_@@_-lgdi32_@@_
 IsCpp=1
 Icon=
 ExeOutput=
@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;2;0;0;0
-UnitCount=115
+UnitCount=118
 
 [VersionInfo]
 Major=1
@@ -800,7 +800,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit116]
-FileName=src\lbitmap.hpp
+FileName=src\lfont.hpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -810,9 +810,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit117]
-FileName=src\gnu-efi-3.0.18\lib\smbios.c
+FileName=src\lfont.cpp
 CompileCpp=1
-Folder=lib
+Folder=
 Compile=1
 Link=1
 Priority=1000
@@ -820,9 +820,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit118]
-FileName=src\gnu-efi-3.0.18\lib\sread.c
+FileName=src\lfile.cpp
 CompileCpp=1
-Folder=lib
+Folder=
 Compile=1
 Link=1
 Priority=1000
