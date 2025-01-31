@@ -21,9 +21,6 @@ const UINT64 InvalidPosition = ~0;
 class LFile;
 
 class LFileReader : public LReader {
-protected:
-	virtual bool ReadBuffer();
-	
 public:
 	LFile *File = NULL;
 	
@@ -35,9 +32,6 @@ public:
 };
 
 class LFileWriter : public LWriter {
-protected:
-	virtual void WriteBuffer();
-	
 public:
 	LFile *File = NULL;
 	

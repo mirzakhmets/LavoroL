@@ -4,7 +4,7 @@
 LFont *Fonts[1L << 10];
 
 int FontNameHash (const CHAR16 *FontName) {
-	register int result = 0;
+	int result = 0;
 	
 	for (; *FontName; ++FontName) {
 		result = ((result << 8) | *FontName) & ((1L << 10) - 1);
