@@ -81,11 +81,13 @@ public:
 	}
 	
 	unsigned GetBuffer (int x, int y) {
-		return Buffer[y * W + x];
+		return (y * W + x) < W * H ? Buffer[y * W + x] : -1;
 	}
 	
 	void SetBuffer (int x, int y, int value) {
-		Buffer[y * W + x] = value;
+		if ((y * W + x) < W * H) {
+			Buffer[y * W + x] = value;
+		}
 	}
 	
 	void Fill(int Color) {

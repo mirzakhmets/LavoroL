@@ -638,9 +638,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	MainScreen->Handle = hwnd;
 		
-	CHAR16 *szText = L"Hello, LavoroL! I would like to express my gratitude to you";
+	CHAR16 *szText = L"Hello, LavoroL! I would like to express my gratitude to you.";
 	
-	GetFont(L"Times New Roman")->DrawText(MainScreen, 64, szText, StrLen(szText));
+	GetFont(L"Times New Roman")->DrawText(MainScreen, 32, szText, StrLen(szText));
 	
 	if(hwnd == NULL) {
 		MessageBox(NULL, "Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);
