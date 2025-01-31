@@ -178,12 +178,20 @@ public:
 		for (int i = 0; i < TextLength; ++i) {
 			if (Text[i] == L'\r') {
 				currentX = 0;
+				
+				continue;
 			} else if (Text[i] == L'\n') {
 				currentY += DefCharHeight;
+				
+				continue;
 			} else if (Text[i] == L'\t') {
 				currentX += DefCharWidth << 2;
+				
+				continue;
 			} else if (Text[i] == L' ') {
 				currentX += DefCharWidth;
+				
+				continue;
 			}
 			
 			LBitmap* c = GetCharBitmap (Text[i]);

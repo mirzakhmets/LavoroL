@@ -637,7 +637,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	MainScreen->Fill(0xffffff);
 
 	MainScreen->Handle = hwnd;
-		
+	
 	CHAR16 *szText = L"Hello, LavoroL! I would like to express my gratitude to you.";
 	
 	GetFont(L"Times New Roman")->DrawText(MainScreen, 32, szText, StrLen(szText));
