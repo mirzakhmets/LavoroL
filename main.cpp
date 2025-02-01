@@ -70,8 +70,8 @@ CHAR16 *szPath;
 UINTN LocalPort = 80;
 UINTN RemotePort = 80;
 EFI_IPv4_ADDRESS RemoteAddress = { 0, 0, 0, 0 };
-EFI_IPv4_ADDRESS LocalAddress = { 192, 168, 3, 16 };
-			
+EFI_IPv4_ADDRESS LocalAddress = { 0, 0, 0, 0 };
+
 extern "C" int Box_Main();
 
 extern "C" int Pyramids_Main();
@@ -515,6 +515,8 @@ bool ConsoleMode() {
 			print_modes(gop);
 		} else if (!StrCmp(szLine, L"quit")) {
 			return false;
+		} else if (!StrCmp(szLine, L"end")) {
+			break;
 		}
 	}
 	
@@ -552,21 +554,30 @@ bool ScreenMode() {
 	avatar.HasMask = true;
 	avatar.EmptyColor = 0xffffff;
 	
+	disk.HasMask = true;
+	disk.EmptyColor = 0xffffff;
+
+	activedisk.HasMask = true;
+	activedisk.EmptyColor = 0xffffff;
+	
 	logo.X = (MainScreen->W - logo.W) >> 1;
 	
-	unsigned ActiveHeight = MainScreen->H - logo.H;
+	unsigned ActiveHeight = MainScreen->H - logo.H - 4;
 	
-	LScreen Help(0, logo.H, MainScreen->W, ActiveHeight);
-	LScreen Explorer(0, logo.H, MainScreen->W, ActiveHeight);
-	LScreen Viewer(0, logo.H, MainScreen->W, ActiveHeight);
+	LScreen Help(0, logo.H + 4, MainScreen->W, ActiveHeight);
+	LScreen Explorer(0, logo.H + 4, MainScreen->W, ActiveHeight);
+	LScreen Viewer(0, logo.H + 4, MainScreen->W, ActiveHeight);
+	LScreen Readme(0, logo.H + 4, MainScreen->W, ActiveHeight);
 	
 	Help.Fill(0x75FA8D);
 	Explorer.Fill(0xffffff);
 	Viewer.Fill(0xFF7F27);
+	Readme.Fill(0xEA3FF7);
 	
 	LFont *HelpFont = GetFont(L"Times New Roman");
 	LFont *ExplorerFont = HelpFont;
 	LFont *ViewerFont = HelpFont;
+	LFont *ReadmeFont = HelpFont;
 	
 	CHAR16 HelpMessage[4096];
 	
@@ -585,7 +596,25 @@ bool ScreenMode() {
 	*ptr = L'\0';
 	
 	HelpFont->DrawText (&Help, 30, HelpMessage, ptr - HelpMessage);
-
+	
+	CHAR16 ReadmeMessage[4096];
+	
+	LFile ReadmeFile(L"\\assets\\readme.txt", NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+	
+	ptr = ReadmeMessage;
+	
+	ReadmeFile.Reader.Next();
+	
+	while (!ReadmeFile.Reader.AtEnd()) {
+		*ptr++ = ReadmeFile.Reader.Current();
+		
+		ReadmeFile.Reader.Next();
+	}
+	
+	*ptr = L'\0';
+	
+	ReadmeFont->DrawText (&Readme, 30, ReadmeMessage, ptr - ReadmeMessage);
+	
 	bool ExplorerTypes[64];	
 	CHAR16* ExplorerNames[64];	
 	int ExplorerActiveIndex = 0;
@@ -785,6 +814,14 @@ bool ScreenMode() {
 				
 				Viewer.Paint();
 			}
+		} else if (ActivePageIndex == 3) {
+			if (!ActivePageDrawn) {
+				Readme.Paint();
+				
+				ActivePageDrawn = true;
+			}
+			
+			ActivePageIndex = 3;
 		}
 		
 		EFI_INPUT_KEY key;
@@ -824,6 +861,12 @@ bool ScreenMode() {
 			}
 			
 			ActivePageIndex = 2;
+		} else if (key.ScanCode == SCAN_F10) {
+			if (ActivePageIndex != 3) {
+				ActivePageDrawn = false;
+			}
+			
+			ActivePageIndex = 3;
 		} else if (key.ScanCode == SCAN_F12) {
 			MainScreen->Fill(0);
         	
@@ -911,13 +954,34 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	szPath = new CHAR16[MAX_PATH];
 	szBuffer = new CHAR16[MAX_BUFFER_SIZE];
 	szCurrentPath = new CHAR16[MAX_PATH];
-
+	
 	gImageHandle = ImageHandle;
 	
 	InitializeFileSystem();
 	
 	TCPEventStatus = 0;
-
+	
+	FileInterface = AssetsFileInterface;
+	
+	LFile config(L"\\assets\\config.txt", NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+	
+	config.Reader.ReadLine(szLine);
+	LocalAddress.Addr[0] = Atoi(szLine);
+	
+	config.Reader.ReadLine(szLine);
+	LocalAddress.Addr[1] = Atoi(szLine);
+	
+	config.Reader.ReadLine(szLine);
+	LocalAddress.Addr[2] = Atoi(szLine);
+	
+	config.Reader.ReadLine(szLine);
+	LocalAddress.Addr[3] = Atoi(szLine);
+	
+	config.Reader.ReadLine(szLine);
+	LocalPort = Atoi(szLine);
+	
+	FileInterface = NULL;
+	
 	unsigned k = 1;
 	
 	for (unsigned i = 0; i < 10000000; ++i) {
