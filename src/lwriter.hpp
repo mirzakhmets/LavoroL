@@ -3,6 +3,8 @@
 
 #define _L_WRITER_
 
+#include <efi.h>
+
 const long WriterBufferSize = 128;
 
 class LWriter {
@@ -42,7 +44,13 @@ public:
 		for (unsigned i = 0; i != size; ++i, pbuffer++) {
 			Write (*pbuffer);
 		}
-	}	
+	}
+	
+	void Write(const CHAR16 *pbuffer, const unsigned size) {
+		for (unsigned i = 0; i != size; ++i, pbuffer++) {
+			Write (*pbuffer);
+		}
+	}
 };
 
 #endif

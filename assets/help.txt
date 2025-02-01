@@ -6,3 +6,21 @@
 	Press F12 to quit
 	
 	Press ESC to quit to console
+
+	Shell commands:
+	 * ls - list files;
+	 * cd - change directory;
+	 * cwd - print current directory;
+	 * cat - print content of file;
+	 * connect - connect to remote host and port for test HTTP request;
+	 * accept - accept incoming connection;
+	 * filldemo - graphics demo;
+	 * printmodes - print available graphic modes;
+	 * quit - exit operating system;
+	 * end - end session;
+	 * rm - remove file or directory;
+	 * cp - copy file;
+	 * mv - move file;
+	 * addline - append line to file;
+	 * mkdir - create directory;
+	 * batch - run batch file.

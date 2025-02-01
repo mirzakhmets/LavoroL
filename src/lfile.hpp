@@ -88,14 +88,14 @@ public:
 			EFI_STATUS status = uefi_call_wrapper(FileInterface->OpenVolume, 2, FileInterface, &Volume);
 			
 			if (EFI_ERROR (status)) {
-				Print(L"\r\nError in opening file: %d\r\n", status);
+				Print(L"\r\n(1) Error in opening file: %d\r\n", status);
 				
 				this->Handle = NULL;
 			} else {
 				status = uefi_call_wrapper(Volume->Open, 5, Volume, &this->Handle, Path, Mode, Attributes);
 				
 				if (EFI_ERROR(status)) {
-					Print(L"\r\nError in opening file: %d\r\n", status);
+					Print(L"\r\n(2) Error in opening file: %d\r\n", status);
 				}
 			}
 			

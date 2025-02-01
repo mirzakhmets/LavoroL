@@ -277,7 +277,7 @@ print_modes(EFI_GRAPHICS_OUTPUT_PROTOCOL *gop)
 	}
 }
 
-bool ConsoleMode() {
+bool ConsoleMode(CHAR16 *BatchFileName) {
 	FileInterface = AssetsFileInterface;
 	
 	Print(L"Welcome to LavoroL!\r\n");
@@ -297,8 +297,18 @@ bool ConsoleMode() {
 		}
 	}
 	
+	LFile *Batch = NULL;
+	
+	if (BatchFileName) {
+		Batch = new LFile(BatchFileName, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+	}
+	
 	while (true) {
-		Input(L"\r\n$>> ", szLine, MAX_PATH);
+		if (Batch) {
+			Batch->Reader.ReadLine(szLine);
+		} else {
+			Input(L"\r\n$>> ", szLine, MAX_PATH);
+		}
 		
 		if (!StrCmp(szLine, L"ACM/Box")) {
 			Box_Main();
@@ -328,7 +338,21 @@ bool ConsoleMode() {
 			
 			delete file;
 		} else if (!StrnCmp(szLine, L"cd", 2)) {
-			StrCpy(szCurrentPath, szLine + 3);
+			CHAR16 *szCatPath = szLine + 3;
+			
+			if (szCatPath[0] != '\\') {
+				StrCpy (szPath, szCurrentPath);
+				
+				if (szCurrentPath[StrLen(szCurrentPath) - 1] != '\\') {
+					StrCat (szPath, L"\\");
+				}
+				
+				StrCat (szPath, szCatPath);
+			} else {
+				StrCpy (szPath, szCatPath);
+			}
+			
+			StrCpy(szCurrentPath, szPath);
 		} else if (!StrCmp(szLine, L"cwd")) {
 			Print(L"\r\n%s\r\n", szCurrentPath);
 		} else if (!StrnCmp(szLine, L"cat", 3)) {
@@ -456,7 +480,6 @@ bool ConsoleMode() {
 				}
 			}
 			
-			
 			Print(L"\r\n");
 			
 			delete Socket;
@@ -514,13 +537,241 @@ bool ConsoleMode() {
 		
 			print_modes(gop);
 		} else if (!StrCmp(szLine, L"quit")) {
+			if (Batch) {
+				delete Batch;
+			}
+			
 			return false;
 		} else if (!StrCmp(szLine, L"end")) {
+			break;
+		} else if (!StrnCmp(szLine, L"rm", 2)) {
+			CHAR16 *szCatPath = szLine + 3;
+			
+			if (szCatPath[0] != '\\') {
+				StrCpy (szPath, szCurrentPath);
+				
+				if (szCurrentPath[StrLen(szCurrentPath) - 1] != '\\') {
+					StrCat (szPath, L"\\");
+				}
+				
+				StrCat (szPath, szCatPath);
+			} else {
+				StrCpy (szPath, szCatPath);
+			}
+			
+			LFile* file = new LFile(szPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+			
+			file->Delete();
+			
+			delete file;
+		} else if (!StrnCmp(szLine, L"cp", 2)) {
+			CHAR16 *szCatPath = szLine + 3;
+			
+			for (; *szCatPath; ++szCatPath) {
+				if (*szCatPath == L' ') {
+					*szCatPath = L'\0';
+					
+					break;
+				}
+			}
+			
+			szCatPath = szLine + 3;
+			
+			if (szCatPath[0] != '\\') {
+				StrCpy (szPath, szCurrentPath);
+				
+				if (szCurrentPath[StrLen(szCurrentPath) - 1] != '\\') {
+					StrCat (szPath, L"\\");
+				}
+				
+				StrCat (szPath, szCatPath);
+			} else {
+				StrCpy (szPath, szCatPath);
+			}
+			
+			LFile* file = new LFile(szPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+			
+			szCatPath = szLine + StrLen(szLine) + 1;
+			
+			if (szCatPath[0] != '\\') {
+				StrCpy (szPath, szCurrentPath);
+				
+				if (szCurrentPath[StrLen(szCurrentPath) - 1] != '\\') {
+					StrCat (szPath, L"\\");
+				}
+				
+				StrCat (szPath, szCatPath);
+			} else {
+				StrCpy (szPath, szCatPath);
+			}
+			
+			LFile* fileCopy = new LFile(szPath, NULL, EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_ARCHIVE);
+			
+			file->Reader.Next();
+			
+			while (!file->Reader.AtEnd()) {
+				fileCopy->Writer.Write(file->Reader.Current());
+				
+				file->Reader.Next();
+			}
+			
+			fileCopy->Writer.Flush();
+			
+			delete file;
+			
+			delete fileCopy;
+		} else if (!StrnCmp(szLine, L"mv", 2)) {
+			CHAR16 *szCatPath = szLine + 3;
+			
+			for (; *szCatPath; ++szCatPath) {
+				if (*szCatPath == L' ') {
+					*szCatPath = L'\0';
+				}
+			}
+			
+			szCatPath = szLine + 3;
+			
+			if (szCatPath[0] != '\\') {
+				StrCpy (szPath, szCurrentPath);
+				
+				if (szCurrentPath[StrLen(szCurrentPath) - 1] != '\\') {
+					StrCat (szPath, L"\\");
+				}
+				
+				StrCat (szPath, szCatPath);
+			} else {
+				StrCpy (szPath, szCatPath);
+			}
+			
+			LFile* file = new LFile(szPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+			
+			szCatPath = szLine + StrLen(szLine) + 1;
+			
+			if (szCatPath[0] != '\\') {
+				StrCpy (szPath, szCurrentPath);
+				
+				if (szCurrentPath[StrLen(szCurrentPath) - 1] != '\\') {
+					StrCat (szPath, L"\\");
+				}
+				
+				StrCat (szPath, szCatPath);
+			} else {
+				StrCpy (szPath, szCatPath);
+			}
+			
+			LFile* fileCopy = new LFile(szPath, NULL, EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_ARCHIVE);
+			
+			file->Reader.Next();
+			
+			while (!file->Reader.AtEnd()) {
+				fileCopy->Writer.Write(file->Reader.Current());
+				
+				file->Reader.Next();
+			}
+			
+			fileCopy->Writer.Flush();
+			
+			file->Delete();
+			
+			delete file;
+			
+			delete fileCopy;
+		} else if (!StrnCmp(szLine, L"addline", 7)) {
+			CHAR16 *szCatPath = szLine + 8;
+			
+			for (; *szCatPath; ++szCatPath) {
+				if (*szCatPath == L' ') {
+					*szCatPath = L'\0';
+					
+					break;
+				}
+			}
+			
+			szCatPath = szLine + 8;
+			
+			if (szCatPath[0] != '\\') {
+				StrCpy (szPath, szCurrentPath);
+				
+				if (szCurrentPath[StrLen(szCurrentPath) - 1] != '\\') {
+					StrCat (szPath, L"\\");
+				}
+				
+				StrCat (szPath, szCatPath);
+			} else {
+				StrCpy (szPath, szCatPath);
+			}
+			
+			LFile* file = new LFile(szPath, NULL, EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_ARCHIVE);
+			
+			UINT64 Position = 0;
+			
+			file->Reader.Next();
+			
+			while (!file->Reader.AtEnd()) {
+				++Position;
+				
+				file->Reader.Next();
+			}
+			
+			file->SetPosition (Position);
+			
+			file->Writer.Write(szLine + StrLen(szLine) + 1, StrLen(szLine + StrLen(szLine) + 1));
+			
+			file->Writer.Write("\r\n", 2);
+			
+			file->Writer.Flush();
+			
+			delete file;
+		} else if (!StrnCmp(szLine, L"mkdir", 5)) {
+			CHAR16 *szCatPath = szLine + 6;
+			
+			if (szCatPath[0] != '\\') {
+				StrCpy (szPath, szCurrentPath);
+				
+				if (szCurrentPath[StrLen(szCurrentPath) - 1] != '\\') {
+					StrCat (szPath, L"\\");
+				}
+				
+				StrCat (szPath, szCatPath);
+			} else {
+				StrCpy (szPath, szCatPath);
+			}
+			
+			LFile* file = new LFile(szPath, NULL, EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY);
+			
+			delete file;
+		} else if (!StrnCmp(szLine, L"batch", 5)) {
+			CHAR16 *szCatPath = szLine + 6;
+			
+			if (szCatPath[0] != '\\') {
+				StrCpy (szPath, szCurrentPath);
+				
+				if (szCurrentPath[StrLen(szCurrentPath) - 1] != '\\') {
+					StrCat (szPath, L"\\");
+				}
+				
+				StrCat (szPath, szCatPath);
+			} else {
+				StrCpy (szPath, szCatPath);
+			}
+			
+			ConsoleMode (szPath);
+		}
+		
+		if (Batch && Batch->Reader.AtEnd()) {
 			break;
 		}
 	}
 	
+	if (Batch) {
+		delete Batch;
+	}
+	
 	return true;
+}
+
+bool ConsoleMode() {
+	return ConsoleMode (NULL);
 }
 
 bool ScreenMode() {
@@ -595,7 +846,7 @@ bool ScreenMode() {
 	
 	*ptr = L'\0';
 	
-	HelpFont->DrawText (&Help, 30, HelpMessage, ptr - HelpMessage);
+	HelpFont->DrawText (&Help, 20, HelpMessage, ptr - HelpMessage);
 	
 	CHAR16 ReadmeMessage[4096];
 	
