@@ -177,9 +177,9 @@ CursorRow=1
 TopLine=54
 LeftChar=1
 [Editor_99]
-CursorCol=4
-CursorRow=773
-TopLine=742
+CursorCol=23
+CursorRow=751
+TopLine=809
 LeftChar=1
 [Editor_100]
 CursorCol=1
@@ -362,9 +362,9 @@ CursorRow=34
 TopLine=118
 LeftChar=1
 [Editor_87]
-CursorCol=13
-CursorRow=5
-TopLine=18
+CursorCol=1
+CursorRow=360
+TopLine=54
 LeftChar=1
 [Editor_104]
 CursorCol=1

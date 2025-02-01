@@ -2,3 +2,6 @@
 	Press F1 for help
 	Press F2 for file browser
 	Press F3 to view file content
+	Press F12 to quit
+	
+	Press ESC to quit to console

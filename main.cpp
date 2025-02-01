@@ -534,6 +534,8 @@ bool ScreenMode() {
 	LBitmap activefile(L"\\assets\\activefile.bmp");
 	LBitmap activefolder(L"\\assets\\activefolder.bmp");
 	LBitmap avatar(L"\\assets\\avatar.bmp");
+	LBitmap disk(L"\\assets\\disk.bmp");
+	LBitmap activedisk(L"\\assets\\activedisk.bmp");
 	
 	file.HasMask = true;
 	file.EmptyColor = 0xffffff;
@@ -667,9 +669,17 @@ bool ScreenMode() {
 							ExplorerTypes[ExplorerCount] = true;
 							
 							if (ExplorerCount == ExplorerActiveIndex) {
-								Explorer.Draw (&activefolder, currentX, currentY);
+								if (!FileInterface) {
+									Explorer.Draw (&activedisk, currentX, currentY);
+								} else {
+									Explorer.Draw (&activefolder, currentX, currentY);
+								}
 							} else {
-								Explorer.Draw (&folder, currentX, currentY);
+								if (!FileInterface) {
+									Explorer.Draw (&disk, currentX, currentY);
+								} else {
+									Explorer.Draw (&folder, currentX, currentY);
+								}
 							}
 						} else {
 							ExplorerTypes[ExplorerCount] = false;
@@ -726,23 +736,49 @@ bool ScreenMode() {
 					
 					StrCat (szFilePath, ExplorerNames[ExplorerActiveIndex]);
 					
-					LFile cfile(szFilePath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
-					
-					cfile.Reader.Next();
-					
-					CHAR16 szContent[4096];
-					
-					unsigned szContentCursor = 0;
-					
-					while (!cfile.Reader.AtEnd() && szContentCursor < 4096) {
-						szContent[szContentCursor++] = cfile.Reader.Current();
+					if (!StriCmp(szFilePath + StrLen(szFilePath) - 4, L".bmp")) {
+						LBitmap bitmap(szFilePath);
+						
+						int ratio = 100;
+						
+						if (bitmap.W > Viewer.W) {
+							int k = (Viewer.W * 100) / bitmap.W;
+							
+							ratio = ratio < k ? ratio : k;
+						}
+						
+						if (bitmap.H > Viewer.H) {
+							int k = (Viewer.H * 100) / bitmap.H;
+							
+							ratio = ratio < k ? ratio : k;
+						}
+						
+						LBitmap *image = bitmap.Scale(ratio);
+						
+						Viewer.Fill(0xFFFE91);
+						
+						Viewer.Draw(image, (Viewer.W - image->W) >> 1, (Viewer.H - image->H) >> 1);
+						
+						delete image;
+					} else {
+						LFile cfile(szFilePath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 						
 						cfile.Reader.Next();
+						
+						CHAR16 szContent[4096];
+						
+						unsigned szContentCursor = 0;
+						
+						while (!cfile.Reader.AtEnd() && szContentCursor < 4096) {
+							szContent[szContentCursor++] = cfile.Reader.Current();
+							
+							cfile.Reader.Next();
+						}
+						
+						Viewer.Fill(0xFFFE91);
+						
+						ViewerFont->DrawText(&Viewer, 20, szContent, szContentCursor);
 					}
-					
-					Viewer.Fill(0xFFFE91);
-					
-					ViewerFont->DrawText(&Viewer, 20, szContent, szContentCursor);
 				}
 				
 				ActivePageDrawn = true;
