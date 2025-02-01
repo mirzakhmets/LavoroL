@@ -175,6 +175,10 @@ public:
 		}
 		#endif		
 	}
+	
+	bool Exists() {
+		return this->Handle;
+	}
 };
 
 #endif

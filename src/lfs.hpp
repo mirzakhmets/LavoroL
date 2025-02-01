@@ -29,6 +29,8 @@ typedef _LIST_ENTRY EFI_LIST_ENTRY;
 
 #define MAX_BUFFER_SIZE 256
 
+typedef EFI_SIMPLE_FILE_SYSTEM_PROTOCOL* PEFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
+
 extern "C" EFI_GUID FileSystemProtocol;
 
 extern "C" CHAR16 *szCurrentPath;
@@ -36,5 +38,11 @@ extern "C" CHAR16 *szCurrentPath;
 extern "C" EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileInterface;
 
 extern "C" void InitializeFileSystem();
+
+extern "C" PEFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileInterfaces;
+
+extern "C" EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *AssetsFileInterface;
+
+extern "C" int FileInterfacesCount;
 
 #endif

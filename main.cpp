@@ -278,6 +278,8 @@ print_modes(EFI_GRAPHICS_OUTPUT_PROTOCOL *gop)
 }
 
 void ConsoleMode() {
+	FileInterface = AssetsFileInterface;
+	
 	Print(L"Welcome to LavoroL!\r\n");
 	
 	EFI_FILE *file;
@@ -516,6 +518,8 @@ void ConsoleMode() {
 }
 
 void ScreenMode() {
+	FileInterface = AssetsFileInterface;
+	
 	InitializeGraphics();
 	
 	MainScreen->Fill(0xFBF3FF);
@@ -590,6 +594,8 @@ void ScreenMode() {
 	
 	logo.Paint();
 	
+	FileInterface = NULL;
+	
 	while (true) {
 		if (ActivePageIndex == 0) {
 			if (!ActivePageDrawn) {
@@ -603,7 +609,7 @@ void ScreenMode() {
 			if (!ActivePageDrawn) {
 				Explorer.Fill(0xFF7F27);
 				
-				LFile *cfile = new LFile(szCurrentPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+				LFile *cfile = NULL;
 				
 				szBufferSize = MAX_BUFFER_SIZE - 1;
 				
@@ -614,7 +620,31 @@ void ScreenMode() {
 				while (szBufferSize) {
 					szBufferSize = MAX_BUFFER_SIZE - 1;
 					
-					EFI_STATUS status = uefi_call_wrapper(cfile->Handle->Read, 3, cfile->Handle, &szBufferSize, szBuffer);
+					EFI_STATUS status = 0;
+					
+					if (!FileInterface) {
+						if (ExplorerCount >= FileInterfacesCount) {
+							szBufferSize = 0;
+						} else {
+							szBufferSize = sizeof (EFI_FILE_INFO);
+							
+							((EFI_FILE_INFO*) szBuffer)->Attribute = EFI_FILE_DIRECTORY;
+							
+							CHAR16 Name[32];
+							
+							UnicodeSPrint(Name, 32, L"%d", ExplorerCount);
+							
+							StrCpy (((EFI_FILE_INFO*) szBuffer)->FileName, Name);
+							
+							szBufferSize += StrLen (Name) + 1;
+						}
+					} else {
+						if (!cfile) {
+							cfile = new LFile(szCurrentPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+						}
+						
+						status = uefi_call_wrapper(cfile->Handle->Read, 3, cfile->Handle, &szBufferSize, szBuffer);
+					}
 					
 					if (!EFI_ERROR(status) && szBufferSize) {
 						if ((currentX + file.W) >= Explorer.W) {
@@ -661,7 +691,9 @@ void ScreenMode() {
 					ExplorerActiveIndex = 0;
 				}
 				
-				delete cfile;
+				if (cfile) {
+					delete cfile;
+				}
 				
 				Explorer.Paint();
 				
@@ -671,12 +703,14 @@ void ScreenMode() {
 			}
 		} else if (ActivePageIndex == 2) {
 			if (!ActivePageDrawn) {
-				if (!ExplorerTypes[ExplorerActiveIndex]) {
+				if (!FileInterface) {
+					// TO DO: add some code here
+				} else if (!ExplorerTypes[ExplorerActiveIndex]) {
 					CHAR16 szFilePath[MAX_PATH];
 					
 					StrCpy (szFilePath, szCurrentPath);
 					
-					if (szFilePath[StrLen(szFilePath) - 1] != L'\\') {
+					if (!StrLen(szFilePath) || szFilePath[StrLen(szFilePath) - 1] != L'\\') {
 						StrCat (szFilePath, L"\\");
 					}
 					
@@ -734,6 +768,10 @@ void ScreenMode() {
 			}
 			
 			ActivePageIndex = 1;
+			
+			ActivePageDrawn = false;
+			
+			FileInterface = NULL;
 		} else if (key.ScanCode == SCAN_F3) {
 			if (ActivePageIndex != 2) {
 				ActivePageDrawn = false;
@@ -742,18 +780,26 @@ void ScreenMode() {
 			ActivePageIndex = 2;
 		} else if (key.UnicodeChar == L'\n' || key.UnicodeChar == L'\r') {
 			if (ActivePageIndex == 1) {
-				if (ExplorerTypes[ExplorerActiveIndex]) {
-					if (szCurrentPath[StrLen(szCurrentPath) - 1] != L'\\') {
-						StrCat (szCurrentPath, L"\\");
-					}
+				if (!FileInterface) {
+					FileInterface = FileInterfaces[Atoi(ExplorerNames[ExplorerActiveIndex])];
 					
-					StrCat (szCurrentPath, ExplorerNames[ExplorerActiveIndex]);
+					StrCpy (szCurrentPath, L"\\");
 					
 					ActivePageDrawn = false;
 				} else {
-					ActivePageDrawn = false;
-					
-					ActivePageIndex = 2;
+					if (ExplorerTypes[ExplorerActiveIndex]) {
+						if (szCurrentPath[StrLen(szCurrentPath) - 1] != L'\\') {
+							StrCat (szCurrentPath, L"\\");
+						}
+						
+						StrCat (szCurrentPath, ExplorerNames[ExplorerActiveIndex]);
+						
+						ActivePageDrawn = false;
+					} else {
+						ActivePageDrawn = false;
+						
+						ActivePageIndex = 2;
+					}
 				}
 			}
 		} else if (key.ScanCode == SCAN_UP) {

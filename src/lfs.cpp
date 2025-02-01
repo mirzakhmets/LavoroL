@@ -12,6 +12,12 @@ CHAR16 *szCurrentPath = NULL;
 
 EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileInterface = NULL;
 
+EFI_SIMPLE_FILE_SYSTEM_PROTOCOL **FileInterfaces = NULL;
+
+EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *AssetsFileInterface = NULL;
+
+int FileInterfacesCount = 0;
+
 extern "C"
 void InitializeFileSystem() {
 	//EFI_STATUS status = uefi_call_wrapper(ST->BootServices->LocateProtocol, 3, &FileSystemProtocol, NULL, (VOID**)&FileInterface);
@@ -27,28 +33,36 @@ void InitializeFileSystem() {
     EFI_HANDLE      *Handles;
 	
     Status = LibLocateHandle (ByProtocol, &FileSystemProtocol, NULL, &NumberHandles, &Handles);
+    
     if (EFI_ERROR(Status)) {
         DEBUG((D_INFO, "LibLocateProtocol: Handle not found\n"));
     
 	    return;
     }
     
-    for (Index=0; Index < NumberHandles; Index++) {
-        Status = uefi_call_wrapper(BS->HandleProtocol, 3, Handles[Index], &FileSystemProtocol, &FileInterface);
+	FileInterfaces = new PEFI_SIMPLE_FILE_SYSTEM_PROTOCOL [NumberHandles];
+	
+    for (Index = 0; Index < NumberHandles; Index++) {
+        Status = uefi_call_wrapper(BS->HandleProtocol, 3, Handles[Index], &FileSystemProtocol, &FileInterfaces[Index]);
         
         if (!EFI_ERROR(Status)) {
+        	FileInterface = FileInterfaces[Index];
+        	
         	LFile file (L"\\assets", NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
         	
-        	if (file.Handle) {
-        		break;
+        	if (file.Exists()) {
+        		AssetsFileInterface = FileInterface;
 			}
         }
+        
+    	++FileInterfacesCount;
     }
-
+	
     if (Handles) {
         FreePool (Handles);
     }
-
+	
+    FileInterface = NULL;
     
 	StrCpy(szCurrentPath, L"\\");
 }
