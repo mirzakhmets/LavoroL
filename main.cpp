@@ -529,12 +529,15 @@ void ScreenMode() {
 	
 	LScreen Help(0, logo.H, MainScreen->W, ActiveHeight);
 	LScreen Explorer(0, logo.H, MainScreen->W, ActiveHeight);
-
-	Help.Fill(0xffffff);
-	Explorer.Fill(0xffffff);
+	LScreen Viewer(0, logo.H, MainScreen->W, ActiveHeight);
+	
+	Help.Fill(0x75FA8D);
+	Explorer.Fill(0xC0C0C0);
+	Viewer.Fill(0xFFFE91);
 	
 	LFont *HelpFont = GetFont(L"Times New Roman");
 	LFont *ExplorerFont = HelpFont;
+	LFont *ViewerFont = HelpFont;
 	
 	CHAR16 HelpMessage[4096];
 	
@@ -553,12 +556,15 @@ void ScreenMode() {
 	*ptr = L'\0';
 	
 	HelpFont->DrawText (&Help, 30, HelpMessage, ptr - HelpMessage);
-	
+
+	bool ExplorerTypes[64];	
 	CHAR16* ExplorerNames[64];	
 	int ExplorerActiveIndex = 0;
 	int ExplorerCount = 0;
 	
 	for (unsigned i = 0; i < 64; ++i) {
+		ExplorerTypes[i] = false;
+		
 		ExplorerNames[i] = new CHAR16[MAX_PATH];
 	}
 	
@@ -594,13 +600,17 @@ void ScreenMode() {
 					EFI_STATUS status = uefi_call_wrapper(cfile->Handle->Read, 3, cfile->Handle, &szBufferSize, szBuffer);
 					
 					if (!EFI_ERROR(status) && szBufferSize) {
-						if (((EFI_FILE_INFO*) szBuffer)->Attribute & EFI_FILE_DIRECTORY) {
+						if ((((EFI_FILE_INFO*) szBuffer)->Attribute & EFI_FILE_DIRECTORY) != 0) {
+							ExplorerTypes[ExplorerCount] = true;
+							
 							if (ExplorerCount == ExplorerActiveIndex) {
 								Explorer.Draw (&activefolder, currentX, currentY);
 							} else {
 								Explorer.Draw (&folder, currentX, currentY);
 							}
 						} else {
+							ExplorerTypes[ExplorerCount] = false;
+							
 							if (ExplorerCount == ExplorerActiveIndex) {
 								Explorer.Draw (&activefile, currentX, currentY);
 							} else {
@@ -640,6 +650,40 @@ void ScreenMode() {
 				
 				ActivePageDrawn = true;
 			}
+		} else if (ActivePageIndex == 2) {
+			if (!ActivePageDrawn) {
+				if (!ExplorerTypes[ExplorerActiveIndex]) {
+					CHAR16 szFilePath[MAX_PATH];
+					
+					StrCpy (szFilePath, szCurrentPath);
+					
+					if (szFilePath[StrLen(szFilePath) - 1] != L'\\') {
+						StrCat (szFilePath, L"\\");
+					}
+					
+					StrCat (szFilePath, ExplorerNames[ExplorerActiveIndex]);
+					
+					LFile cfile(szFilePath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+					
+					cfile.Reader.Next();
+					
+					CHAR16 szContent[4096];
+					
+					unsigned szContentCursor = 0;
+					
+					while (!cfile.Reader.AtEnd() && szContentCursor < 4096) {
+						szContent[szContentCursor++] = cfile.Reader.Current();
+						
+						cfile.Reader.Next();
+					}
+					
+					ViewerFont->DrawText(&Viewer, 20, szContent, szContentCursor);
+				}
+				
+				ActivePageDrawn = true;
+				
+				Viewer.Paint();
+			}
 		}
 		
 		EFI_INPUT_KEY key;
@@ -669,6 +713,28 @@ void ScreenMode() {
 			}
 			
 			ActivePageIndex = 1;
+		} else if (key.ScanCode == SCAN_F3) {
+			if (ActivePageIndex != 2) {
+				ActivePageDrawn = false;
+			}
+			
+			ActivePageIndex = 2;
+		} else if (key.UnicodeChar == L'\n' || key.UnicodeChar == L'\r') {
+			if (ActivePageIndex == 1) {
+				if (ExplorerTypes[ExplorerActiveIndex]) {
+					if (szCurrentPath[StrLen(szCurrentPath) - 1] != L'\\') {
+						StrCat (szCurrentPath, L"\\");
+					}
+					
+					StrCat (szCurrentPath, ExplorerNames[ExplorerActiveIndex]);
+					
+					ActivePageDrawn = false;
+				} else {
+					ActivePageDrawn = false;
+					
+					ActivePageIndex = 2;
+				}
+			}
 		} else if (key.ScanCode == SCAN_UP) {
 			if (ActivePageIndex == 1) {
 				ExplorerActiveIndex -= Explorer.W / file.W;
