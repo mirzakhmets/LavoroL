@@ -806,7 +806,7 @@ EFIAPI
 efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
 	InitializeLib(ImageHandle, SystemTable);
-
+	
 	szLine = new CHAR16[MAX_PATH];
 	szPath = new CHAR16[MAX_PATH];
 	szBuffer = new CHAR16[MAX_BUFFER_SIZE];

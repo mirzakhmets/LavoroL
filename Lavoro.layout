@@ -74,8 +74,8 @@ CursorRow=176
 TopLine=154
 LeftChar=1
 [Editors]
-Order=
-Focused=117
+Order=99,118
+Focused=99
 [Editor_0]
 CursorCol=3
 CursorRow=6
@@ -177,9 +177,9 @@ CursorRow=1
 TopLine=54
 LeftChar=1
 [Editor_99]
-CursorCol=2
-CursorRow=886
-TopLine=1
+CursorCol=9
+CursorRow=519
+TopLine=507
 LeftChar=1
 [Editor_100]
 CursorCol=1
@@ -448,6 +448,6 @@ TopLine=1
 LeftChar=1
 [Editor_118]
 CursorCol=2
-CursorRow=22
+CursorRow=28
 TopLine=1
 LeftChar=1
