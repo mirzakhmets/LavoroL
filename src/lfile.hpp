@@ -89,6 +89,8 @@ public:
 			
 			if (EFI_ERROR (status)) {
 				Print(L"\r\nError in opening file: %d\r\n", status);
+				
+				this->Handle = NULL;
 			} else {
 				status = uefi_call_wrapper(Volume->Open, 5, Volume, &this->Handle, Path, Mode, Attributes);
 				
