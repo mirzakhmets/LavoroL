@@ -160,7 +160,7 @@ public:
 		this->Reader.Reset();
 		this->Writer.Flush();
 		this->Writer.Reset();
-
+		
 		#ifdef _TEST_
 		fsetpos (FileHandle, &_Position);
 		#else

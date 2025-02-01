@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;2;0;0;0
-UnitCount=118
+UnitCount=119
 
 [VersionInfo]
 Major=1
@@ -830,9 +830,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit119]
-FileName=src\gnu-efi-3.0.18\lib\str.c
+FileName=src\lscreen.cpp
 CompileCpp=1
-Folder=lib
+Folder=
 Compile=1
 Link=1
 Priority=1000

@@ -3,7 +3,7 @@
 
 #define _L_WRITER_
 
-const long WriterBufferSize = 66000;
+const long WriterBufferSize = 128;
 
 class LWriter {
 protected:

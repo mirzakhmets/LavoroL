@@ -65,7 +65,13 @@ public:
 		
 		CHAR16 szPath[MAX_PATH];
 		
-		StrCpy (szPath, L".\\assets\\fonts\\");
+		StrCpy (szPath,
+			#ifdef _TEST_
+			L".\\assets\\fonts\\"
+			#else
+			L"\\assets\\fonts\\"
+			#endif
+			);
 		
 		StrCat (szPath, BitmapFileName);
 		
@@ -89,6 +95,9 @@ public:
 				}
 			}
 		}
+
+		++maxWidth;		
+		++maxHeight;
 		
 		int CharSetLength = StrLen (CharSet);
 		int minCharWidth = ((maxWidth - minWidth) / CharSetLength) / 3;

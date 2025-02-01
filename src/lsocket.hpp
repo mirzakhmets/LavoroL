@@ -3,6 +3,8 @@
 
 #define _L_SOCKET_
 
+#define SOCKET_MAX_TRIES	40000
+
 #include <ltask.hpp>
 
 #include <lreader.hpp>
@@ -308,7 +310,7 @@ public:
 			
 			if (EFI_ERROR(token.CompletionToken.Status)) {
 				TCPCompletionTokenEventFinish();
-			} else if (++Counter > 1000000) {
+			} else if (++Counter > SOCKET_MAX_TRIES) {
 				TCPCompletionTokenEventFinish();
 			}
 		}
@@ -378,7 +380,7 @@ public:
 			
 			if (EFI_ERROR(iotoken.CompletionToken.Status)) {
 				TCPCompletionTokenEventFinish();
-			} else if (++Counter > 1000000) {
+			} else if (++Counter > SOCKET_MAX_TRIES) {
 				TCPCompletionTokenEventFinish();
 			}
 			
@@ -476,7 +478,7 @@ public:
 				this->Closed = true;
 				
 				TCPCompletionTokenEventFinish();
-			} else if (++Counter > 1000000) {
+			} else if (++Counter > SOCKET_MAX_TRIES) {
 				Print (L"Error completing (2): %d, %d\r\n", iotoken.CompletionToken.Status, frag->FragmentLength);
 				
 				if (frag->FragmentLength == InitialSize) {

@@ -819,6 +819,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	TCPEventStatus = 0;
 
 	#ifdef SCREEN_MODE
+		unsigned k = 1;
+		
+		for (unsigned i = 0; i < 10000000; ++i) {
+			k <<= 1;
+		}
+		
 		ScreenMode();
 	#endif
 	
@@ -860,17 +866,15 @@ void testFiles() {
 	
 	ZeroMem (szBuffer, MAX_BUFFER_SIZE * sizeof (szBuffer[0]));
 	
+	file->Reader.Next();
+	
 	while (!file->Reader.AtEnd()) {
+		szBuffer[szBufferSize++] = file->Reader.Current();
+		
 		file->Reader.Next();
 		
-		if (file->Reader.Current() != ReaderEof) {
-			szBuffer[szBufferSize++] = file->Reader.Current();
-		} else {
-			break;
-		}
-		
 		if (szBufferSize == MAX_BUFFER_SIZE - 1) {
-			szBuffer[szBufferSize] = (CHAR16) 0;
+			szBuffer[szBufferSize] = L'\0';
 			
 			printf ("%ls", szBuffer);
 			
@@ -881,7 +885,7 @@ void testFiles() {
 	}
 	
 	if (szBufferSize) {
-		szBuffer[szBufferSize] = (CHAR16) 0;
+		szBuffer[szBufferSize] = L'\0';
 		
 		printf ("%ls", szBuffer);
 		

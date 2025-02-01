@@ -7,7 +7,7 @@
 
 const int ReaderEof = -1;
 
-const unsigned long ReaderBufferSize = 66000;
+const unsigned long ReaderBufferSize = 128;
 
 class LReader {
 protected:
@@ -28,7 +28,9 @@ public:
 	}
 	
 	void Reset() {
-		this->current = this->size = 0;
+		if (!this->AtEnd()) {
+			this->current = this->size = 0;
+		}
 	}
 	
 	void SetText() {
@@ -48,6 +50,10 @@ public:
 			this->size = ~0U;
 			
 			return ReaderEof;
+		}
+		
+		if (this->current == this->size) {
+			this->Next();
 		}
 		
 		return this->buffer[current];
