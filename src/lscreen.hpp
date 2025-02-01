@@ -148,6 +148,22 @@ public:
 		
 		return result;
 	}
+	
+	void Draw(LScreen *screen) {
+		for (unsigned i = 0; i < screen->H; ++i) {
+			for (unsigned j = 0; j < screen->W; ++j) {
+				SetBuffer (screen->X + j, screen->Y + i, screen->GetBuffer(j, i));
+			}
+		}
+	}
+	
+	void Draw(LScreen *screen, int x, int y) {
+		for (unsigned i = 0; i < screen->H; ++i) {
+			for (unsigned j = 0; j < screen->W; ++j) {
+				SetBuffer (x + j, y + i, screen->GetBuffer(j, i));
+			}
+		}
+	}
 };
 
 #endif

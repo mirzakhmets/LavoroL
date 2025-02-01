@@ -500,25 +500,217 @@ void ConsoleMode() {
 	}
 }
 
-bool ScreenMode() {
+void ScreenMode() {
 	InitializeGraphics();
 	
 	MainScreen->Fill(0xFBF3FF);
 	
-	while (true) {
-		MainScreen->Paint();
+	LBitmap logo(L"\\assets\\logo.bmp");
+	LBitmap file(L"\\assets\\file.bmp");
+	LBitmap folder(L"\\assets\\folder.bmp");
+	LBitmap activefile(L"\\assets\\activefile.bmp");
+	LBitmap activefolder(L"\\assets\\activefolder.bmp");
+	
+	file.HasMask = true;
+	file.EmptyColor = 0xffffff;
+
+	folder.HasMask = true;
+	folder.EmptyColor = 0xffffff;
+
+	activefile.HasMask = true;
+	activefile.EmptyColor = 0xffffff;
+
+	activefolder.HasMask = true;
+	activefolder.EmptyColor = 0xffffff;
+	
+	logo.X = (MainScreen->W - logo.W) >> 1;
+	
+	unsigned ActiveHeight = MainScreen->H - logo.H;
+	
+	LScreen Help(0, logo.H, MainScreen->W, ActiveHeight);
+	LScreen Explorer(0, logo.H, MainScreen->W, ActiveHeight);
+
+	Help.Fill(0xffffff);
+	Explorer.Fill(0xffffff);
+	
+	LFont *HelpFont = GetFont(L"Times New Roman");
+	LFont *ExplorerFont = HelpFont;
+	
+	CHAR16 HelpMessage[4096];
+	
+	LFile HelpFile(L"\\assets\\help.txt", NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+	
+	CHAR16 *ptr = HelpMessage;
+	
+	HelpFile.Reader.Next();
+	
+	while (!HelpFile.Reader.AtEnd()) {
+		*ptr++ = HelpFile.Reader.Current();
 		
-		EFI_INPUT_KEY Key;
-    	EFI_STATUS Status;
-    	
-    	WaitForSingleEvent (ConIn->WaitForKey, 0);
-		
-        Status = uefi_call_wrapper(ConIn->ReadKeyStroke, 2, ConIn, &Key);
-        
-        
+		HelpFile.Reader.Next();
 	}
 	
-	return true;
+	*ptr = L'\0';
+	
+	HelpFont->DrawText (&Help, 30, HelpMessage, ptr - HelpMessage);
+	
+	CHAR16* ExplorerNames[64];	
+	int ExplorerActiveIndex = 0;
+	int ExplorerCount = 0;
+	
+	for (unsigned i = 0; i < 64; ++i) {
+		ExplorerNames[i] = new CHAR16[MAX_PATH];
+	}
+	
+	int ActivePageIndex = 0;
+	bool ActivePageDrawn = false;
+	
+	MainScreen->Paint();
+	
+	logo.Paint();
+	
+	while (true) {
+		if (ActivePageIndex == 0) {
+			if (!ActivePageDrawn) {
+				Help.Paint();
+				
+				ActivePageDrawn = true;
+			}
+			
+			ActivePageIndex = 0;
+		} else if (ActivePageIndex == 1) {
+			if (!ActivePageDrawn) {
+				LFile *cfile = new LFile(szCurrentPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+				
+				szBufferSize = MAX_BUFFER_SIZE - 1;
+				
+				int currentX = 0, currentY = 0;
+				
+				ExplorerCount = 0;
+				
+				while (szBufferSize) {
+					szBufferSize = MAX_BUFFER_SIZE - 1;
+					
+					EFI_STATUS status = uefi_call_wrapper(cfile->Handle->Read, 3, cfile->Handle, &szBufferSize, szBuffer);
+					
+					if (!EFI_ERROR(status) && szBufferSize) {
+						if (((EFI_FILE_INFO*) szBuffer)->Attribute & EFI_FILE_DIRECTORY) {
+							if (ExplorerCount == ExplorerActiveIndex) {
+								Explorer.Draw (&activefolder, currentX, currentY);
+							} else {
+								Explorer.Draw (&folder, currentX, currentY);
+							}
+						} else {
+							if (ExplorerCount == ExplorerActiveIndex) {
+								Explorer.Draw (&activefile, currentX, currentY);
+							} else {
+								Explorer.Draw (&file, currentX, currentY);
+							}
+						}
+						
+						LScreen Caption (0, 0, file.W, 20);
+						
+						StrCpy (ExplorerNames[ExplorerCount], ((EFI_FILE_INFO*) szBuffer)->FileName);
+						
+						ExplorerFont->DrawText(&Caption, 20, ExplorerNames[ExplorerCount], StrLen (ExplorerNames[ExplorerCount]));
+						
+						Explorer.Draw (&Caption, currentX, currentY + file.H);
+						
+						if ((currentX + file.W) > Explorer.W) {
+							currentX = 0;
+							
+							currentY += file.H + 20;
+						} else {
+							currentX += file.W;
+						}
+						
+						++ExplorerCount;
+					}
+				}
+				
+				if (ExplorerCount < ExplorerActiveIndex) {
+					ExplorerActiveIndex = 0;
+				}
+				
+				delete cfile;
+				
+				Explorer.Paint();
+				
+				ActivePageIndex = 1;
+				
+				ActivePageDrawn = true;
+			}
+		}
+		
+		EFI_INPUT_KEY key;
+		EFI_STATUS status;
+		
+		WaitForSingleEvent (ST->ConIn->WaitForKey, 0);
+		
+		status = uefi_call_wrapper(ST->ConIn->ReadKeyStroke, 2, ST->ConIn, &key);
+        
+        if (key.ScanCode == SCAN_ESC) {
+        	MainScreen->Fill(0);
+        	
+        	MainScreen->Paint();
+        	
+        	break;
+		}
+		
+		if (key.ScanCode == SCAN_F1) {
+			if (ActivePageIndex) {
+				ActivePageDrawn = false;
+			}
+			
+			ActivePageIndex = 0;
+		} else if (key.ScanCode == SCAN_F2) {
+			if (ActivePageIndex != 1) {
+				ActivePageDrawn = false;
+			}
+			
+			ActivePageIndex = 1;
+		} else if (key.ScanCode == SCAN_UP) {
+			if (ActivePageIndex == 1) {
+				ExplorerActiveIndex -= Explorer.W / file.W;
+				
+				if (ExplorerActiveIndex < 0) {
+					ExplorerActiveIndex = 0;
+				}
+				
+				ActivePageDrawn = false;
+			}
+		} else if (key.ScanCode == SCAN_DOWN) {
+			if (ActivePageIndex == 1) {
+				ExplorerActiveIndex += Explorer.W / file.W;
+				
+				if (ExplorerActiveIndex >= ExplorerCount) {
+					ExplorerActiveIndex = ExplorerCount - 1;
+				}
+				
+				ActivePageDrawn = false;
+			}
+		} else if (key.ScanCode == SCAN_LEFT) {
+			if (ActivePageIndex == 1) {
+				--ExplorerActiveIndex;
+				
+				if (ExplorerActiveIndex < 0) {
+					ExplorerActiveIndex = 0;
+				}
+				
+				ActivePageDrawn = false;
+			}
+		} else if (key.ScanCode == SCAN_RIGHT) {
+			if (ActivePageIndex == 1) {
+				++ExplorerActiveIndex;
+				
+				if (ExplorerActiveIndex >= ExplorerCount) {
+					ExplorerActiveIndex = ExplorerCount - 1;
+				}
+				
+				ActivePageDrawn = false;
+			}
+		}
+	}
 }
 
 extern "C"
