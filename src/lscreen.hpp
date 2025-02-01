@@ -4,7 +4,22 @@
 #define _L_SCREEN_
 
 #ifdef _TEST_
+
 #include <windows.h>
+#include <wingdi.h>
+#include <cstdio>
+#include <cstdlib>
+
+using namespace std;
+
+#undef BOOLEAN
+
+#define EFI_NT_EMUL
+
+typedef _LIST_ENTRY EFI_LIST_ENTRY;
+
+#undef MAX_PATH
+
 #endif
 
 #include <efi.h>

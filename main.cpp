@@ -575,8 +575,8 @@ bool ScreenMode() {
 	Readme.Fill(0xEA3FF7);
 	
 	LFont *HelpFont = GetFont(L"Times New Roman");
-	LFont *ExplorerFont = HelpFont;
-	LFont *ViewerFont = HelpFont;
+	LFont *ExplorerFont = GetFont(L"Courier");
+	LFont *ViewerFont = ExplorerFont;
 	LFont *ReadmeFont = HelpFont;
 	
 	CHAR16 HelpMessage[4096];
@@ -720,13 +720,13 @@ bool ScreenMode() {
 							}
 						}
 						
-						LScreen Caption (0, 0, file.W, 32);
+						LScreen Caption (0, 0, file.W, 90);
 						
 						Caption.Fill (0xffffff);
 						
 						StrCpy (ExplorerNames[ExplorerCount], ((EFI_FILE_INFO*) szBuffer)->FileName);
 						
-						ExplorerFont->DrawText(&Caption, 32, ExplorerNames[ExplorerCount], StrLen (ExplorerNames[ExplorerCount]));
+						ExplorerFont->DrawText(&Caption, 45, ExplorerNames[ExplorerCount], StrLen (ExplorerNames[ExplorerCount]));
 						
 						Explorer.Draw (&Caption, currentX, currentY + file.H);
 						
@@ -806,7 +806,7 @@ bool ScreenMode() {
 						
 						Viewer.Fill(0xFFFE91);
 						
-						ViewerFont->DrawText(&Viewer, 20, szContent, szContentCursor);
+						ViewerFont->DrawText(&Viewer, 45, szContent, szContentCursor);
 					}
 				}
 				
@@ -1116,7 +1116,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	
 	CHAR16 *szText = L"Hello, LavoroL! I would like to express my gratitude to you.";
 	
-	GetFont(L"Times New Roman")->DrawText(MainScreen, 32, szText, StrLen(szText));
+	GetFont(L"Courier")->DrawText(MainScreen, 40, szText, StrLen(szText));
 	
 	if(hwnd == NULL) {
 		MessageBox(NULL, "Window Creation Failed!","Error!",MB_ICONEXCLAMATION|MB_OK);

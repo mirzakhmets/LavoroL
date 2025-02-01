@@ -1,0 +1,4 @@
+Courier
+font-2-1.bmp,ABCDEFGHIJKLMNOPQRSTUVWXYZ
+font-2-2.bmp,abcdefghijklmnopqrstuvwxyz0123456789
+font-2-3.bmp,`~!@#$%^&*()-_=+[]{}\|;':",.<>/?

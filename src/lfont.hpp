@@ -224,8 +224,8 @@ public:
 			
 			for (unsigned x = 0; x < c->W; ++x) {
 				for (unsigned y = OffsetY; y < c->H; ++y) {
-					if (c->GetBuffer(x, y) != FontEmptyColor) {
-						Screen->SetBuffer(currentX + x, currentY + y, c->GetBuffer(x, y));
+					if (c->GetBuffer(x, y - OffsetY) != FontEmptyColor) {
+						Screen->SetBuffer(currentX + x, currentY + y, c->GetBuffer(x, y - OffsetY));
 					}
 				}
 			}

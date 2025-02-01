@@ -25,9 +25,9 @@ typedef _LIST_ENTRY EFI_LIST_ENTRY;
 #include <efi.h>
 #include <efilib.h>
 
-#define MAX_PATH 256
+const unsigned MAX_PATH = 256;
 
-#define MAX_BUFFER_SIZE 256
+const unsigned MAX_BUFFER_SIZE = 256;
 
 typedef EFI_SIMPLE_FILE_SYSTEM_PROTOCOL* PEFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
 
