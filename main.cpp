@@ -691,7 +691,7 @@ bool ScreenMode() {
 						if ((currentX + file.W) >= Explorer.W) {
 							currentX = 0;
 							
-							currentY += file.H + 32;
+							currentY += file.H + 40;
 						}
 						
 						if ((((EFI_FILE_INFO*) szBuffer)->Attribute & EFI_FILE_DIRECTORY) != 0) {
@@ -720,13 +720,13 @@ bool ScreenMode() {
 							}
 						}
 						
-						LScreen Caption (0, 0, file.W, 90);
+						LScreen Caption (0, 0, file.W, 40);
 						
 						Caption.Fill (0xffffff);
 						
 						StrCpy (ExplorerNames[ExplorerCount], ((EFI_FILE_INFO*) szBuffer)->FileName);
 						
-						ExplorerFont->DrawText(&Caption, 45, ExplorerNames[ExplorerCount], StrLen (ExplorerNames[ExplorerCount]));
+						ExplorerFont->DrawText(&Caption, 20, ExplorerNames[ExplorerCount], StrLen (ExplorerNames[ExplorerCount]));
 						
 						Explorer.Draw (&Caption, currentX, currentY + file.H);
 						

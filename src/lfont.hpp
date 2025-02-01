@@ -212,7 +212,7 @@ public:
 				c->Fill(this->FontEmptyColor);
 			}
 			
-			int OffsetY = ((CharHeight - c->H) * FontSize) / CharHeight;
+			int OffsetY = ((CharHeight - c->H) * FontSize + CharHeight - 1) / CharHeight;
 			
 			c = c->Scale(ratio);
 			
@@ -223,9 +223,9 @@ public:
 			}
 			
 			for (unsigned x = 0; x < c->W; ++x) {
-				for (unsigned y = OffsetY; y < c->H; ++y) {
+				for (unsigned y = OffsetY; y < c->H + OffsetY; ++y) {
 					if (c->GetBuffer(x, y - OffsetY) != FontEmptyColor) {
-						Screen->SetBuffer(currentX + x, currentY + y, c->GetBuffer(x, y - OffsetY));
+						Screen->SetBuffer(currentX + x, currentY + y - OffsetY, c->GetBuffer(x, y - OffsetY));
 					}
 				}
 			}
