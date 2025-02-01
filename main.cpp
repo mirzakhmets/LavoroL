@@ -798,7 +798,7 @@ bool ScreenMode() {
 
 	activefile.HasMask = true;
 	activefile.EmptyColor = 0xffffff;
-
+	
 	activefolder.HasMask = true;
 	activefolder.EmptyColor = 0xffffff;
 	
@@ -829,6 +829,40 @@ bool ScreenMode() {
 	LFont *ExplorerFont = GetFont(L"Courier");
 	LFont *ViewerFont = ExplorerFont;
 	LFont *ReadmeFont = HelpFont;
+	
+	EFI_TIME CurrentTime;
+	
+	ST->RuntimeServices->GetTime(&CurrentTime, NULL);
+	
+	CHAR16 szCurrentTime[MAX_PATH];
+	
+	const CHAR16 *szMonths[] = {
+		L"Jan",
+		L"Feb",
+		L"Mar",
+		L"Apr",
+		L"May",
+		L"Jun",
+		L"Jul",
+		L"Aug",
+		L"Sep",
+		L"Oct",
+		L"Nov",
+		L"Dec"
+	};
+	
+	UnicodeSPrint(
+		szCurrentTime, MAX_PATH,
+			L"%02d:%02d\r\n%ls %d, %d",
+			CurrentTime.Hour, CurrentTime.Minute, szMonths[CurrentTime.Month - 1], CurrentTime.Day, CurrentTime.Year);
+	
+	LScreen CurrentTimeBox(((MainScreen->W) * 3) >> 2, (logo.H - 2 * 32) >> 1, MainScreen->W >> 2, 2 * 32);
+	
+	CurrentTimeBox.Fill (0xFBF3FF);
+	CurrentTimeBox.HasMask = true;
+	CurrentTimeBox.EmptyColor = 0xFBF3FF;
+	
+	ExplorerFont->DrawText(&CurrentTimeBox, 32, szCurrentTime, StrLen(szCurrentTime));
 	
 	CHAR16 HelpMessage[4096];
 	
@@ -885,6 +919,8 @@ bool ScreenMode() {
 	logo.Paint();
 	
 	avatar.Paint();
+	
+	CurrentTimeBox.Paint();
 	
 	FileInterface = NULL;
 	
