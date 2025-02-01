@@ -280,6 +280,21 @@ print_modes(EFI_GRAPHICS_OUTPUT_PROTOCOL *gop)
 void ConsoleMode() {
 	Print(L"Welcome to LavoroL!\r\n");
 	
+	EFI_FILE *file;
+	
+	EFI_STATUS statusv = uefi_call_wrapper(FileInterface->OpenVolume, 2, FileInterface, &file);
+	
+	if (EFI_ERROR(statusv)) {
+		Print(L"\r\nError in opening volume: %d\r\n", statusv);
+	} else {
+		EFI_FILE_SYSTEM_INFO *info = LibFileSystemInfo(file);
+		
+		if (info) {
+			Print(L"\r\nVolume size (Mb): %d\r\n", (unsigned int) (info->VolumeSize >> 20));
+			Print(L"Volume label: %s\r\n", info->VolumeLabel);
+		}
+	}
+	
 	while (true) {
 		Input(L"\r\n$>> ", szLine, MAX_PATH);
 		
@@ -532,8 +547,8 @@ void ScreenMode() {
 	LScreen Viewer(0, logo.H, MainScreen->W, ActiveHeight);
 	
 	Help.Fill(0x75FA8D);
-	Explorer.Fill(0xC0C0C0);
-	Viewer.Fill(0xFFFE91);
+	Explorer.Fill(0xFF7F27);
+	Viewer.Fill(0xFF7F27);
 	
 	LFont *HelpFont = GetFont(L"Times New Roman");
 	LFont *ExplorerFont = HelpFont;
@@ -586,6 +601,8 @@ void ScreenMode() {
 			ActivePageIndex = 0;
 		} else if (ActivePageIndex == 1) {
 			if (!ActivePageDrawn) {
+				Explorer.Fill(0xFF7F27);
+				
 				LFile *cfile = new LFile(szCurrentPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
 				
 				szBufferSize = MAX_BUFFER_SIZE - 1;
@@ -600,6 +617,12 @@ void ScreenMode() {
 					EFI_STATUS status = uefi_call_wrapper(cfile->Handle->Read, 3, cfile->Handle, &szBufferSize, szBuffer);
 					
 					if (!EFI_ERROR(status) && szBufferSize) {
+						if ((currentX + file.W) >= Explorer.W) {
+							currentX = 0;
+							
+							currentY += file.H + 32;
+						}
+						
 						if ((((EFI_FILE_INFO*) szBuffer)->Attribute & EFI_FILE_DIRECTORY) != 0) {
 							ExplorerTypes[ExplorerCount] = true;
 							
@@ -618,21 +641,17 @@ void ScreenMode() {
 							}
 						}
 						
-						LScreen Caption (0, 0, file.W, 20);
+						LScreen Caption (0, 0, file.W, 32);
+						
+						Caption.Fill (0xFF7F27);
 						
 						StrCpy (ExplorerNames[ExplorerCount], ((EFI_FILE_INFO*) szBuffer)->FileName);
 						
-						ExplorerFont->DrawText(&Caption, 20, ExplorerNames[ExplorerCount], StrLen (ExplorerNames[ExplorerCount]));
+						ExplorerFont->DrawText(&Caption, 32, ExplorerNames[ExplorerCount], StrLen (ExplorerNames[ExplorerCount]));
 						
 						Explorer.Draw (&Caption, currentX, currentY + file.H);
 						
-						if ((currentX + file.W) > Explorer.W) {
-							currentX = 0;
-							
-							currentY += file.H + 20;
-						} else {
-							currentX += file.W;
-						}
+						currentX += file.W;
 						
 						++ExplorerCount;
 					}
@@ -676,6 +695,8 @@ void ScreenMode() {
 						
 						cfile.Reader.Next();
 					}
+					
+					Viewer.Fill(0xFFFE91);
 					
 					ViewerFont->DrawText(&Viewer, 20, szContent, szContentCursor);
 				}

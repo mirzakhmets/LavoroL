@@ -18,22 +18,5 @@ void InitializeFileSystem() {
 		Print(L"\r\nError in loading file interface: %d\r\n", status);
 	}
 	
-	#ifndef SCREEN_MODE
-	EFI_FILE *file;
-	
-	status = uefi_call_wrapper(FileInterface->OpenVolume, 2, FileInterface, &file);
-	
-	if (EFI_ERROR(status)) {
-		Print(L"\r\nError in opening volume: %d\r\n", status);
-	} else {
-		EFI_FILE_SYSTEM_INFO *info = LibFileSystemInfo(file);
-		
-		if (info) {
-			Print(L"\r\nVolume size (Mb): %d\r\n", (unsigned int) (info->VolumeSize / 1024 / 1024));
-			Print(L"Volume label: %s\r\n", info->VolumeLabel);
-		}
-	}
-	#endif
-	
 	StrCpy(szCurrentPath, L"\\");
 }

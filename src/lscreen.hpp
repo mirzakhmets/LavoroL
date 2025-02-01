@@ -123,7 +123,7 @@ public:
 			Buffer[i] = Color;
 		}
 	}
-		
+	
 	LScreen* Scale (int Ratio) {
 		LScreen *result = new LScreen(X, Y, (W * Ratio + 100 - 1) / 100, (H * Ratio + 100 - 1) / 100);
 		
