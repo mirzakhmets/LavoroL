@@ -277,7 +277,7 @@ print_modes(EFI_GRAPHICS_OUTPUT_PROTOCOL *gop)
 	}
 }
 
-void ConsoleMode() {
+bool ConsoleMode() {
 	FileInterface = AssetsFileInterface;
 	
 	Print(L"Welcome to LavoroL!\r\n");
@@ -513,11 +513,15 @@ void ConsoleMode() {
 			}
 		
 			print_modes(gop);
+		} else if (!StrCmp(szLine, L"quit")) {
+			return false;
 		}
 	}
+	
+	return true;
 }
 
-void ScreenMode() {
+bool ScreenMode() {
 	FileInterface = AssetsFileInterface;
 	
 	InitializeGraphics();
@@ -529,6 +533,7 @@ void ScreenMode() {
 	LBitmap folder(L"\\assets\\folder.bmp");
 	LBitmap activefile(L"\\assets\\activefile.bmp");
 	LBitmap activefolder(L"\\assets\\activefolder.bmp");
+	LBitmap avatar(L"\\assets\\avatar.bmp");
 	
 	file.HasMask = true;
 	file.EmptyColor = 0xffffff;
@@ -542,6 +547,9 @@ void ScreenMode() {
 	activefolder.HasMask = true;
 	activefolder.EmptyColor = 0xffffff;
 	
+	avatar.HasMask = true;
+	avatar.EmptyColor = 0xffffff;
+	
 	logo.X = (MainScreen->W - logo.W) >> 1;
 	
 	unsigned ActiveHeight = MainScreen->H - logo.H;
@@ -551,7 +559,7 @@ void ScreenMode() {
 	LScreen Viewer(0, logo.H, MainScreen->W, ActiveHeight);
 	
 	Help.Fill(0x75FA8D);
-	Explorer.Fill(0xFF7F27);
+	Explorer.Fill(0xffffff);
 	Viewer.Fill(0xFF7F27);
 	
 	LFont *HelpFont = GetFont(L"Times New Roman");
@@ -594,6 +602,8 @@ void ScreenMode() {
 	
 	logo.Paint();
 	
+	avatar.Paint();
+	
 	FileInterface = NULL;
 	
 	while (true) {
@@ -607,7 +617,7 @@ void ScreenMode() {
 			ActivePageIndex = 0;
 		} else if (ActivePageIndex == 1) {
 			if (!ActivePageDrawn) {
-				Explorer.Fill(0xFF7F27);
+				Explorer.Fill(0xffffff);
 				
 				LFile *cfile = NULL;
 				
@@ -673,7 +683,7 @@ void ScreenMode() {
 						
 						LScreen Caption (0, 0, file.W, 32);
 						
-						Caption.Fill (0xFF7F27);
+						Caption.Fill (0xffffff);
 						
 						StrCpy (ExplorerNames[ExplorerCount], ((EFI_FILE_INFO*) szBuffer)->FileName);
 						
@@ -765,19 +775,25 @@ void ScreenMode() {
 		} else if (key.ScanCode == SCAN_F2) {
 			if (ActivePageIndex != 1) {
 				ActivePageDrawn = false;
+			} else {
+				FileInterface = NULL;
+				
+				ActivePageDrawn = false;
 			}
 			
 			ActivePageIndex = 1;
-			
-			ActivePageDrawn = false;
-			
-			FileInterface = NULL;
 		} else if (key.ScanCode == SCAN_F3) {
 			if (ActivePageIndex != 2) {
 				ActivePageDrawn = false;
 			}
 			
 			ActivePageIndex = 2;
+		} else if (key.ScanCode == SCAN_F12) {
+			MainScreen->Fill(0);
+        	
+        	MainScreen->Paint();
+        	
+			return false;
 		} else if (key.UnicodeChar == L'\n' || key.UnicodeChar == L'\r') {
 			if (ActivePageIndex == 1) {
 				if (!FileInterface) {
@@ -844,6 +860,8 @@ void ScreenMode() {
 			}
 		}
 	}
+	
+	return true;
 }
 
 extern "C"
@@ -864,17 +882,21 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	
 	TCPEventStatus = 0;
 
-	#ifdef SCREEN_MODE
-		unsigned k = 1;
-		
-		for (unsigned i = 0; i < 10000000; ++i) {
-			k <<= 1;
+	unsigned k = 1;
+	
+	for (unsigned i = 0; i < 10000000; ++i) {
+		k <<= 1;
+	}
+	
+	while (true) {
+		if (!ScreenMode()) {
+			break;
 		}
 		
-		ScreenMode();
-	#endif
-	
-	ConsoleMode();
+		if (!ConsoleMode()) {
+			break;
+		}
+	}
 	
 	return EFI_SUCCESS;
 }

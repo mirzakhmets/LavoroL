@@ -9,7 +9,7 @@ LIBS     = -L"/LavoroL/src/gnu-efi-3.0.18/gnuefi" -L"/LavoroL/src/gnu-efi-3.0.18
 INCS     = -I"/LavoroL/src" -I"/LavoroL/src/gnu-efi-3.0.18/inc" -I"/LavoroL/src/gnu-efi-3.0.18/inc/x86_64"
 CXXINCS  = -I"/LavoroL/src" -I"/LavoroL/src/gnu-efi-3.0.18/inc" -I"/LavoroL/src/gnu-efi-3.0.18/inc/x86_64"
 BIN      = LavoroL
-CXXFLAGS = $(CXXINCS) -fpic -ffreestanding -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -mno-avx -fPIE -g -O2 -funsigned-char -fno-strict-aliasing -fno-stack-check -fno-merge-all-constants -DCONFIG_X86_64 -maccumulate-outgoing-args -DGNU_EFI_USE_MS_ABI -fpermissive -fno-exceptions -fno-rtti -DSCREEN_MODE
+CXXFLAGS = $(CXXINCS) -fpic -ffreestanding -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -mno-avx -fPIE -g -O2 -funsigned-char -fno-strict-aliasing -fno-stack-check -fno-merge-all-constants -DCONFIG_X86_64 -maccumulate-outgoing-args -DGNU_EFI_USE_MS_ABI -fpermissive -fno-exceptions -fno-rtti
 CFLAGS   = $(INCS) 
 DEL      = rm
 
