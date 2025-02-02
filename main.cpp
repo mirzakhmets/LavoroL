@@ -559,7 +559,7 @@ bool ConsoleMode(CHAR16 *BatchFileName) {
 				StrCpy (szPath, szCatPath);
 			}
 			
-			LFile* file = new LFile(szPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+			LFile* file = new LFile(szPath, NULL, EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_VALID_ATTR);
 			
 			file->Delete();
 			
@@ -643,7 +643,7 @@ bool ConsoleMode(CHAR16 *BatchFileName) {
 				StrCpy (szPath, szCatPath);
 			}
 			
-			LFile* file = new LFile(szPath, NULL, EFI_FILE_MODE_READ, EFI_FILE_VALID_ATTR);
+			LFile* file = new LFile(szPath, NULL, EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_VALID_ATTR);
 			
 			szCatPath = szLine + StrLen(szLine) + 1;
 			
